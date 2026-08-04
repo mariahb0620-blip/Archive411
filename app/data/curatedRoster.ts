@@ -1,0 +1,87 @@
+/** Designers, concept stores and vintage sellers Archive411 prioritizes in search results. */
+export const PRIORITY_DESIGNER_IDS = new Set([
+  "des-chalay",
+  "des-guape",
+  "des-wfbb",
+  "des-edikted-ref",
+  "des-guizio-ref",
+  "des-tiger-mist-ref",
+  "des-fancy-club-ref",
+  "des-el-dantes",
+  "des-tokyo-after-dark",
+  "des-lagos-edit",
+  "des-fanci-club-ref",
+  "des-lsoul-ref",
+  "des-moi-dien-ref",
+  "des-london-exp-ref",
+  "des-paris-archive-ref",
+  "des-nyc-downtown-ref",
+  "des-jaded-london-ref",
+]);
+
+export const PRIORITY_CONCEPT_STORE_IDS = new Set([
+  "cs-new-playground",
+  "cs-rue-miche",
+  "cs-bangkok-concept",
+]);
+
+export const PRIORITY_VINTAGE_SELLER_IDS = new Set([
+  "vs-alkaia",
+  "vs-y2k-footwear",
+  "vs-hcmc-vintage",
+]);
+
+/** Reference labels shown in look explanations (not partnership claims). */
+export const ROSTER_DISPLAY_NAMES: Record<string, string> = {
+  "des-chalay": "CHALAY",
+  "des-guape": "GUAPÉ Studio",
+  "des-wfbb": "Work From Beach Be Like",
+  "des-edikted-ref": "Ediketed",
+  "des-guizio-ref": "Danielle Guizio",
+  "des-tiger-mist-ref": "Tiger Mist",
+  "des-fancy-club-ref": "FANCY CLUB",
+  "des-el-dantes": "El Dantés",
+  "des-tokyo-after-dark": "Tokyo After Dark",
+  "des-lagos-edit": "Lagos Edit",
+  "des-fanci-club-ref": "Fancì Club",
+  "des-lsoul-ref": "LSOUL",
+  "des-moi-dien-ref": "Môi Điên",
+  "des-london-exp-ref": "London Experimental Edit",
+  "des-paris-archive-ref": "Paris Archive Atelier",
+  "des-nyc-downtown-ref": "NYC Downtown Edit",
+  "des-jaded-london-ref": "Jaded London",
+  "des-footwear-tech-ref": "Technical Footwear Edit",
+  "cs-new-playground": "The New Playground",
+  "cs-rue-miche": "Rue Miche",
+  "cs-bangkok-concept": "Bangkok Concept Edit",
+  "vs-alkaia": "Alkaia Vintage",
+  "vs-y2k-footwear": "Y2K Footwear Archive",
+};
+
+export const STYLE_TO_AESTHETIC: Record<string, string[]> = {
+  y2k: ["y2k", "2000s", "going-out"],
+  "1990s-minimalism": ["minimalist", "1990s"],
+  streetwear: ["streetwear", "elevated-streetwear", "contemporary"],
+  "office-wear": ["tailored", "corporate", "soft-tailoring"],
+  "quiet-luxury": ["quiet-luxury", "soft-tailoring"],
+  "evening-wear": ["nightlife", "going-out", "chic-and-sexy"],
+  romantic: ["romantic", "feminine"],
+  bohemian: ["bohemian", "handmade", "resort-wear"],
+  vintage: ["vintage", "archive-fashion"],
+  coastal: ["coastal", "resort-wear", "vacation-wear"],
+  experimental: ["experimental", "avant-garde"],
+  goth: ["goth", "nightlife"],
+  "modest-fashion": ["modest-fashion"],
+  "afrofuturism": ["afrofuturism", "tailored", "artisanal"],
+  "pop-glamour": ["pop-glamour", "metallic", "y2k", "nightlife"],
+  "luxury-streetwear": ["luxury-streetwear", "elevated-streetwear", "high-low"],
+  "corsetry": ["corsetry", "body-conscious", "feminine"],
+  "kawaii": ["kawaii", "pastel", "platform", "playful"],
+  "black-street-style": ["elevated-streetwear", "luxury-streetwear", "high-low", "vintage-designer"],
+  "hot-girl-y2k": ["y2k", "body-conscious", "low-rise", "playful", "chic-and-sexy"],
+  "black-latino-mens-street": ["luxury-streetwear", "stacked-denim", "varsity", "gender-expansive"],
+  "tokyo-street": ["avant-garde", "deconstructed", "layered-black", "street-style"],
+  "korean-street": ["y2k", "minimalist", "preppy", "nightlife"],
+  "thai-vietnamese-street": ["resort-wear", "handmade", "deconstructed", "nightlife"],
+  "alternative": ["punk", "goth", "grunge", "experimental", "cyber-y2k"],
+};
