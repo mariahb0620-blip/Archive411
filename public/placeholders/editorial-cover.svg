@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750" fill="none">
+  <rect width="1200" height="750" fill="#0a0a0a"/>
+  <rect x="0" y="0" width="1200" height="750" fill="url(#g)"/>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1200" y2="750" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1a1a1a"/>
+      <stop offset="0.55" stop-color="#242424"/>
+      <stop offset="1" stop-color="#141414"/>
+    </linearGradient>
+  </defs>
+  <line x1="80" y1="120" x2="80" y2="630" stroke="#888888" stroke-width="2"/>
+  <line x1="80" y1="630" x2="420" y2="630" stroke="#888888" stroke-width="2"/>
+  <text x="100" y="200" fill="#c9b896" font-family="Georgia,serif" font-size="42">archive.411</text>
+  <text x="100" y="250" fill="#666666" font-family="system-ui,sans-serif" font-size="16" letter-spacing="4">EDITORIAL PLACEHOLDER</text>
+</svg>

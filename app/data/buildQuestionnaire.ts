@@ -69,6 +69,39 @@ export const SIZE_CATEGORY_FIELDS = [
   { key: "bras", label: "Bras (optional)", placeholder: "e.g. 34C" },
 ] as const;
 
+export type SizeCategoryKey = (typeof SIZE_CATEGORY_FIELDS)[number]["key"];
+
+const LETTER_SIZES = ["XXS", "XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"] as const;
+const US_NUMERIC = ["0", "2", "4", "6", "8", "10", "12", "14", "16", "18", "20", "22", "24"] as const;
+const US_WAIST = ["24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "36", "38", "40", "42"] as const;
+const UK_NUMERIC = ["4", "6", "8", "10", "12", "14", "16", "18", "20", "22", "24", "26"] as const;
+const EU_NUMERIC = ["32", "34", "36", "38", "40", "42", "44", "46", "48", "50", "52"] as const;
+const BRA_SIZES = [
+  "30A", "30B", "30C", "30D", "32A", "32B", "32C", "32D", "32DD",
+  "34A", "34B", "34C", "34D", "34DD", "34E",
+  "36A", "36B", "36C", "36D", "36DD", "36E",
+  "38B", "38C", "38D", "38DD", "40C", "40D", "40DD", "42C", "42D",
+] as const;
+
+/** Selectable size chips by sizing system + category — avoids free-text typos. */
+export function getSizeOptionsForCategory(
+  system: string | undefined,
+  category: SizeCategoryKey
+): readonly string[] {
+  if (category === "bras") return BRA_SIZES;
+
+  const resolved = system ?? "letter";
+
+  if (resolved === "letter") return LETTER_SIZES;
+  if (resolved === "US") {
+    if (category === "bottoms") return US_WAIST;
+    return US_NUMERIC;
+  }
+  if (resolved === "UK") return UK_NUMERIC;
+  if (resolved === "EU") return EU_NUMERIC;
+  return LETTER_SIZES;
+}
+
 export const SPECIAL_SIZING_OPTIONS = [
   "Petite",
   "Tall",

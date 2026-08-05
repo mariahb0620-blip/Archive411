@@ -6,7 +6,12 @@ import {
   CONTEXT_STEPS,
   COVERAGE_MAP,
   KAWAII_MAP,
+  SIZING_SYSTEM_OPTIONS,
+  SPECIAL_SIZING_OPTIONS,
+  SIZE_CATEGORY_FIELDS,
+  getSizeOptionsForCategory,
   type BuildStepId,
+  type SizeCategoryKey,
 } from "@/app/data/buildQuestionnaire";
 import { DEFAULT_PRICE_RANGE, PRICE_TIER_LABELS } from "@/app/data/mockCatalog";
 import { STYLE_COMMUNITIES } from "@/app/data/styleCommunities";
@@ -246,42 +251,35 @@ export function ClothingSizesStep({
 }) {
   const sizes = answers.clothingSizes ?? {};
   const skipped = new Set(sizes.skippedCategories ?? []);
+  const system = sizes.sizingSystem ?? "letter";
+  const isCustom = system === "custom";
 
   const updateSizes = (patch: Partial<NonNullable<BuildLookAnswers["clothingSizes"]>>) => {
     onChange({ clothingSizes: { ...sizes, ...patch } });
   };
 
-  const toggleSkip = (key: string) => {
-    const next = new Set(skipped);
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-    updateSizes({ skippedCategories: Array.from(next) });
+  const setSizingSystem = (id: string) => {
+    const cleared: Partial<NonNullable<BuildLookAnswers["clothingSizes"]>> = {
+      sizingSystem: id as NonNullable<BuildLookAnswers["clothingSizes"]>["sizingSystem"],
+      tops: undefined,
+      bottoms: undefined,
+      dresses: undefined,
+      outerwear: undefined,
+      bras: undefined,
+    };
+    updateSizes(cleared);
   };
 
-  const fields = [
-    { key: "tops", label: "Tops" },
-    { key: "bottoms", label: "Bottoms" },
-    { key: "dresses", label: "Dresses" },
-    { key: "outerwear", label: "Jackets & outerwear" },
-    { key: "bras", label: "Bras (optional)" },
-  ] as const;
-
-  const systems = [
-    { id: "US", label: "US" },
-    { id: "UK", label: "UK" },
-    { id: "EU", label: "EU" },
-    { id: "letter", label: "International letter sizing" },
-    { id: "custom", label: "Custom measurements" },
-  ] as const;
-
-  const specialOptions = [
-    "Petite",
-    "Tall",
-    "Maternity",
-    "Adaptive clothing",
-    "Made-to-measure",
-    "Extended sizing",
-  ];
+  const toggleSkip = (key: SizeCategoryKey) => {
+    const next = new Set(skipped);
+    if (next.has(key)) next.delete(key);
+    else {
+      next.add(key);
+      updateSizes({ [key]: undefined, skippedCategories: Array.from(next) });
+      return;
+    }
+    updateSizes({ skippedCategories: Array.from(next) });
+  };
 
   const toggleSpecial = (opt: string) => {
     const current = sizes.specialSizing ?? [];
@@ -294,8 +292,8 @@ export function ClothingSizesStep({
   return (
     <div className="w-full max-w-xl text-left">
       <p className="text-center text-sm leading-relaxed text-muted">
-        Sizes vary between brands. Archive411 will use your answers to prioritize
-        likely matches and will always show the designer&apos;s official size guide.
+        Pick a sizing system, then tap your size for each category — no typing
+        required. Brands still vary; we&apos;ll prioritize likely matches.
       </p>
 
       <fieldset className="mt-8">
@@ -303,42 +301,70 @@ export function ClothingSizesStep({
           Sizing system
         </legend>
         <div className="mt-3 flex flex-wrap gap-2">
-          {systems.map((sys) => (
+          {SIZING_SYSTEM_OPTIONS.map((sys) => (
             <SelectChip
               key={sys.id}
               label={sys.label}
-              selected={sizes.sizingSystem === sys.id}
-              onClick={() => updateSizes({ sizingSystem: sys.id })}
+              selected={system === sys.id}
+              onClick={() => setSizingSystem(sys.id)}
             />
           ))}
         </div>
       </fieldset>
 
-      <div className="mt-8 space-y-4">
-        {fields.map(({ key, label }) => (
-          <div key={key} className="flex flex-col gap-2 sm:flex-row sm:items-end">
-            <label className="flex-1">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-muted">
-                {label}
-              </span>
-              <input
-                type="text"
-                disabled={skipped.has(key)}
-                value={(sizes[key] as string | undefined) ?? ""}
-                onChange={(e) => updateSizes({ [key]: e.target.value })}
-                placeholder={skipped.has(key) ? "Skipped" : "Enter size"}
-                className="mt-2 w-full border border-smoke/60 bg-charcoal px-4 py-3 text-sm text-ivory disabled:opacity-40"
-              />
-            </label>
-            <button
-              type="button"
-              onClick={() => toggleSkip(key)}
-              className="shrink-0 border border-smoke/40 px-3 py-3 text-[10px] uppercase tracking-[0.15em] text-muted hover:text-ivory"
-            >
-              {skipped.has(key) ? "Include" : "Skip"}
-            </button>
-          </div>
-        ))}
+      <div className="mt-8 space-y-8">
+        {SIZE_CATEGORY_FIELDS.map(({ key, label }) => {
+          const isSkipped = skipped.has(key);
+          const selected = (sizes[key] as string | undefined) ?? "";
+          const options = getSizeOptionsForCategory(system, key);
+
+          return (
+            <fieldset key={key} className={isSkipped ? "opacity-40" : undefined}>
+              <div className="flex items-center justify-between gap-3">
+                <legend className="text-[10px] uppercase tracking-[0.2em] text-muted">
+                  {label}
+                  {selected && !isSkipped ? (
+                    <span className="ml-2 tracking-normal text-accent">· {selected}</span>
+                  ) : null}
+                </legend>
+                <button
+                  type="button"
+                  onClick={() => toggleSkip(key)}
+                  className="shrink-0 border border-smoke/40 px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] text-muted hover:text-ivory"
+                >
+                  {isSkipped ? "Include" : "Skip"}
+                </button>
+              </div>
+
+              {!isSkipped && (
+                isCustom ? (
+                  <input
+                    type="text"
+                    value={selected}
+                    onChange={(e) => updateSizes({ [key]: e.target.value })}
+                    placeholder="e.g. chest 36 in / waist 28 in"
+                    className="mt-3 w-full border border-smoke/60 bg-charcoal px-4 py-3 text-sm text-ivory placeholder:text-smoke"
+                  />
+                ) : (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {options.map((opt) => (
+                      <SelectChip
+                        key={opt}
+                        label={opt}
+                        selected={selected === opt}
+                        onClick={() =>
+                          updateSizes({
+                            [key]: selected === opt ? undefined : opt,
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
+                )
+              )}
+            </fieldset>
+          );
+        })}
       </div>
 
       <fieldset className="mt-8">
@@ -346,7 +372,7 @@ export function ClothingSizesStep({
           Additional sizing needs
         </legend>
         <div className="mt-3 flex flex-wrap gap-2">
-          {specialOptions.map((opt) => (
+          {SPECIAL_SIZING_OPTIONS.map((opt) => (
             <SelectChip
               key={opt}
               label={opt}

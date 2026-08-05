@@ -1,8 +1,9 @@
 import type { LookbookProfile } from "@/app/types/fashionIntelligence";
 import { sumGarmentPrices } from "@/app/utils/fashionIntelligenceHelpers";
+import { placeholderFromSeed } from "@/app/data/productImagery";
 
-const img = (id: string) =>
-  `https://images.unsplash.com/${id}?w=900&q=85&auto=format&fit=crop`;
+/** No stock photography — local product placeholders until retailer feeds connect. */
+const img = (id: string) => placeholderFromSeed(id);
 
 const looks: Omit<LookbookProfile, "totalPrice">[] = [
   {

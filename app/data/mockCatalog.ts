@@ -4,6 +4,7 @@ import type {
   Lookbook,
   PriceRangeSelection,
 } from "@/app/types/domain";
+import { EDITORIAL_PLACEHOLDER } from "@/app/data/productImagery";
 
 export {
   MOCK_DESIGNERS,
@@ -48,8 +49,7 @@ export const MOCK_LOOKBOOKS: Lookbook[] = [
     id: "lb-01",
     title: "Global Night Edit",
     description: "Layered looks sourced across independent labels and concept stores.",
-    coverImageUrl:
-      "https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=900&q=85&auto=format&fit=crop",
+    coverImageUrl: EDITORIAL_PLACEHOLDER,
     generatedAt: "2026-02-15",
     occasion: "Evening",
     climate: "Humid",

@@ -2,12 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-    ],
+    // Stock hosts intentionally omitted — Archive411 uses local placeholders
+    // or verified retailer product URLs only.
+    remotePatterns: [],
   },
 };
 

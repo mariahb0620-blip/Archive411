@@ -20,7 +20,6 @@ function ArchiveContent() {
             text="Generate a lookbook or save a look to begin collecting your personal fashion references."
             primaryLabel="Create My First Lookbook"
             primaryHref="/build"
-            imageUrl="https://images.unsplash.com/photo-1496747611176-843222e1eead?w=800&q=85&auto=format&fit=crop"
           />
         </main>
       </div>

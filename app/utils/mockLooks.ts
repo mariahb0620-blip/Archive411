@@ -4,15 +4,16 @@ import type {
   GenerationSettings,
   OutfitLook,
 } from "@/app/types/styling";
+import { placeholderFromSeed } from "@/app/data/productImagery";
 
-const UNSPLASH = (id: string) =>
-  `https://images.unsplash.com/${id}?w=800&q=80&auto=format&fit=crop`;
+/** No stock photography — local product placeholders until retailer feeds connect. */
+const localImage = (id: string) => placeholderFromSeed(id);
 
 const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
   {
     title: "Midnight Structure",
     tagline: "Tailored lines meet quiet confidence",
-    heroImageUrl: UNSPLASH("photo-1515886657613-9f3515b0c78f"),
+    heroImageUrl: localImage("photo-1515886657613-9f3515b0c78f"),
     totalPrice: 1240,
     garments: [
       {
@@ -21,7 +22,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Calvin Klein",
         price: 189,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1594938298603-c8148c4dae35"),
+        imageUrl: localImage("photo-1594938298603-c8148c4dae35"),
         affiliateUrl: "https://www.macys.com/shop/product/calvin-klein-blazer",
       },
       {
@@ -30,7 +31,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Bar III",
         price: 79,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1594633312681-425c7b97ccd1"),
+        imageUrl: localImage("photo-1594633312681-425c7b97ccd1"),
         affiliateUrl: "https://www.macys.com/shop/product/bar-iii-trousers",
       },
       {
@@ -39,7 +40,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Saint Laurent",
         price: 895,
         retailer: "luxury",
-        imageUrl: UNSPLASH("photo-1543163521-1bf539c55dd2"),
+        imageUrl: localImage("photo-1543163521-1bf539c55dd2"),
         affiliateUrl: "https://www.ysl.com/en-us/shoes/ankle-boots",
       },
       {
@@ -48,7 +49,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Coach",
         price: 295,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1584917865442-de89df76afd3"),
+        imageUrl: localImage("photo-1584917865442-de89df76afd3"),
         affiliateUrl: "https://www.macys.com/shop/product/coach-tote",
       },
     ],
@@ -56,7 +57,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
   {
     title: "Urban Ease",
     tagline: "Street-luxe without the effort",
-    heroImageUrl: UNSPLASH("photo-1483985988354-763728e79a0b"),
+    heroImageUrl: localImage("photo-1483985988354-763728e79a0b"),
     totalPrice: 680,
     garments: [
       {
@@ -65,7 +66,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Nike",
         price: 85,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1556821840-3a63f95609a7"),
+        imageUrl: localImage("photo-1556821840-3a63f95609a7"),
         affiliateUrl: "https://www.macys.com/shop/product/nike-hoodie",
       },
       {
@@ -74,7 +75,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Levi's",
         price: 98,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1542272604-787c3835535d"),
+        imageUrl: localImage("photo-1542272604-787c3835535d"),
         affiliateUrl: "https://www.macys.com/shop/product/levis-denim",
       },
       {
@@ -83,7 +84,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Common Projects",
         price: 425,
         retailer: "luxury",
-        imageUrl: UNSPLASH("photo-1606107557195-0e29a4b5b4aa"),
+        imageUrl: localImage("photo-1606107557195-0e29a4b5b4aa"),
         affiliateUrl: "https://www.commonprojects.com/sneakers",
       },
       {
@@ -92,7 +93,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Rag & Bone",
         price: 72,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1588850561407-ed78c962de19"),
+        imageUrl: localImage("photo-1588850561407-ed78c962de19"),
         affiliateUrl: "https://www.macys.com/shop/product/rag-bone-cap",
       },
     ],
@@ -100,7 +101,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
   {
     title: "Gallery Opening",
     tagline: "Art-world polish for after dark",
-    heroImageUrl: UNSPLASH("photo-1539008835657-9e8e96875921"),
+    heroImageUrl: localImage("photo-1539008835657-9e8e96875921"),
     totalPrice: 1890,
     garments: [
       {
@@ -109,7 +110,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Reformation",
         price: 248,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1595777457583-95e059d581b8"),
+        imageUrl: localImage("photo-1595777457583-95e059d581b8"),
         affiliateUrl: "https://www.macys.com/shop/product/slip-dress",
       },
       {
@@ -118,7 +119,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Max Mara",
         price: 1290,
         retailer: "luxury",
-        imageUrl: UNSPLASH("photo-1539533018447-63fcce2678e3"),
+        imageUrl: localImage("photo-1539533018447-63fcce2678e3"),
         affiliateUrl: "https://www.maxmara.com/wool-coat",
       },
       {
@@ -127,7 +128,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Stuart Weitzman",
         price: 352,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1543163521-1bf539c55dd2"),
+        imageUrl: localImage("photo-1543163521-1bf539c55dd2"),
         affiliateUrl: "https://www.macys.com/shop/product/stuart-weitzman-pumps",
       },
     ],
@@ -135,7 +136,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
   {
     title: "Weekend Edit",
     tagline: "Effortless layers for slow mornings",
-    heroImageUrl: UNSPLASH("photo-1469334031218-e382a71b716b"),
+    heroImageUrl: localImage("photo-1469334031218-e382a71b716b"),
     totalPrice: 420,
     garments: [
       {
@@ -144,7 +145,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Charter Club",
         price: 89,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1576566588028-4147f3842f27"),
+        imageUrl: localImage("photo-1576566588028-4147f3842f27"),
         affiliateUrl: "https://www.macys.com/shop/product/cashmere-sweater",
       },
       {
@@ -153,7 +154,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Alfani",
         price: 65,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1473966968600-fa801b869a1a"),
+        imageUrl: localImage("photo-1473966968600-fa801b869a1a"),
         affiliateUrl: "https://www.macys.com/shop/product/alfani-chinos",
       },
       {
@@ -162,7 +163,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Cole Haan",
         price: 168,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1560769629-975ec94aa046"),
+        imageUrl: localImage("photo-1560769629-975ec94aa046"),
         affiliateUrl: "https://www.macys.com/shop/product/cole-haan-loafers",
       },
       {
@@ -171,7 +172,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "MVMT",
         price: 98,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1523275335684-37898b6baf30"),
+        imageUrl: localImage("photo-1523275335684-37898b6baf30"),
         affiliateUrl: "https://www.macys.com/shop/product/mvmt-watch",
       },
     ],
@@ -179,7 +180,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
   {
     title: "Power Lunch",
     tagline: "Boardroom ready, editorially refined",
-    heroImageUrl: UNSPLASH("photo-1490481651871-ab68de25d43d"),
+    heroImageUrl: localImage("photo-1490481651871-ab68de25d43d"),
     totalPrice: 980,
     garments: [
       {
@@ -188,7 +189,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Anne Klein",
         price: 79,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1564257631407-3deb25e9c8e0"),
+        imageUrl: localImage("photo-1564257631407-3deb25e9c8e0"),
         affiliateUrl: "https://www.macys.com/shop/product/anne-klein-blouse",
       },
       {
@@ -197,7 +198,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Alfani",
         price: 69,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1583496664526-173dd5e543d2"),
+        imageUrl: localImage("photo-1583496664526-173dd5e543d2"),
         affiliateUrl: "https://www.macys.com/shop/product/pencil-skirt",
       },
       {
@@ -206,7 +207,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Theory",
         price: 495,
         retailer: "luxury",
-        imageUrl: UNSPLASH("photo-1594938298603-c8148c4dae35"),
+        imageUrl: localImage("photo-1594938298603-c8148c4dae35"),
         affiliateUrl: "https://www.theory.com/blazer",
       },
       {
@@ -215,7 +216,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Naturalizer",
         price: 89,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1543163521-1bf539c55dd2"),
+        imageUrl: localImage("photo-1543163521-1bf539c55dd2"),
         affiliateUrl: "https://www.macys.com/shop/product/naturalizer-pumps",
       },
       {
@@ -224,7 +225,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Kate Spade",
         price: 78,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1535632066927-ab7c9ab60908"),
+        imageUrl: localImage("photo-1535632066927-ab7c9ab60908"),
         affiliateUrl: "https://www.macys.com/shop/product/kate-spade-earrings",
       },
     ],
@@ -232,7 +233,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
   {
     title: "Neon Nights",
     tagline: "After-hours energy with edge",
-    heroImageUrl: UNSPLASH("photo-1509631179647-0177331693ae"),
+    heroImageUrl: localImage("photo-1509631179647-0177331693ae"),
     totalPrice: 1150,
     garments: [
       {
@@ -241,7 +242,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Free People",
         price: 68,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1566174053879-31528523f8ae"),
+        imageUrl: localImage("photo-1566174053879-31528523f8ae"),
         affiliateUrl: "https://www.macys.com/shop/product/metallic-top",
       },
       {
@@ -250,7 +251,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "AllSaints",
         price: 298,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1583496664526-173dd5e543d2"),
+        imageUrl: localImage("photo-1583496664526-173dd5e543d2"),
         affiliateUrl: "https://www.macys.com/shop/product/leather-skirt",
       },
       {
@@ -259,7 +260,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Acne Studios",
         price: 620,
         retailer: "luxury",
-        imageUrl: UNSPLASH("photo-1551028719-00167b16eac5"),
+        imageUrl: localImage("photo-1551028719-00167b16eac5"),
         affiliateUrl: "https://www.acnestudios.com/moto-jacket",
       },
       {
@@ -268,7 +269,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Steve Madden",
         price: 164,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1543163521-1bf539c55dd2"),
+        imageUrl: localImage("photo-1543163521-1bf539c55dd2"),
         affiliateUrl: "https://www.macys.com/shop/product/platform-boots",
       },
     ],
@@ -276,7 +277,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
   {
     title: "Coastal Minimal",
     tagline: "Clean lines, sun-washed palette",
-    heroImageUrl: UNSPLASH("photo-1434389677669-e08b4cac3105"),
+    heroImageUrl: localImage("photo-1434389677669-e08b4cac3105"),
     totalPrice: 540,
     garments: [
       {
@@ -285,7 +286,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Tommy Hilfiger",
         price: 89,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1596755094514-f87e34085b2c"),
+        imageUrl: localImage("photo-1596755094514-f87e34085b2c"),
         affiliateUrl: "https://www.macys.com/shop/product/linen-shirt",
       },
       {
@@ -294,7 +295,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "J.Crew",
         price: 78,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1591195853828-11db59a633f6"),
+        imageUrl: localImage("photo-1591195853828-11db59a633f6"),
         affiliateUrl: "https://www.macys.com/shop/product/tailored-shorts",
       },
       {
@@ -303,7 +304,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Bottega Veneta",
         price: 290,
         retailer: "luxury",
-        imageUrl: UNSPLASH("photo-1603487745087-3faa4b6f0c82"),
+        imageUrl: localImage("photo-1603487745087-3faa4b6f0c82"),
         affiliateUrl: "https://www.bottegaveneta.com/sandals",
       },
       {
@@ -312,7 +313,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Madewell",
         price: 83,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1590875123103-9e793109a8e6"),
+        imageUrl: localImage("photo-1590875123103-9e793109a8e6"),
         affiliateUrl: "https://www.macys.com/shop/product/canvas-tote",
       },
     ],
@@ -320,7 +321,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
   {
     title: "Studio Session",
     tagline: "Movement-ready athleisure elevated",
-    heroImageUrl: UNSPLASH("photo-1518310959331-1ee27c683b6e"),
+    heroImageUrl: localImage("photo-1518310959331-1ee27c683b6e"),
     totalPrice: 380,
     garments: [
       {
@@ -329,7 +330,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Alo Yoga",
         price: 98,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1506629082955-511b8f8c9c68"),
+        imageUrl: localImage("photo-1506629082955-511b8f8c9c68"),
         affiliateUrl: "https://www.macys.com/shop/product/alo-leggings",
       },
       {
@@ -338,7 +339,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Nike",
         price: 55,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1571902943202-507ec2618e8f"),
+        imageUrl: localImage("photo-1571902943202-507ec2618e8f"),
         affiliateUrl: "https://www.macys.com/shop/product/nike-sports-bra",
       },
       {
@@ -347,7 +348,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Adidas",
         price: 85,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1556821840-3a63f95609a7"),
+        imageUrl: localImage("photo-1556821840-3a63f95609a7"),
         affiliateUrl: "https://www.macys.com/shop/product/adidas-jacket",
       },
       {
@@ -356,7 +357,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "New Balance",
         price: 142,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1606107557195-0e29a4b5b4aa"),
+        imageUrl: localImage("photo-1606107557195-0e29a4b5b4aa"),
         affiliateUrl: "https://www.macys.com/shop/product/new-balance-sneakers",
       },
     ],
@@ -364,7 +365,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
   {
     title: "Autumn Layers",
     tagline: "Textured warmth in muted tones",
-    heroImageUrl: UNSPLASH("photo-1487222477894-8943e31ef7b2"),
+    heroImageUrl: localImage("photo-1487222477894-8943e31ef7b2"),
     totalPrice: 720,
     garments: [
       {
@@ -373,7 +374,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Uniqlo",
         price: 49,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1576566588028-4147f3842f27"),
+        imageUrl: localImage("photo-1576566588028-4147f3842f27"),
         affiliateUrl: "https://www.macys.com/shop/product/merino-turtleneck",
       },
       {
@@ -382,7 +383,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "London Fog",
         price: 189,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1539533018447-63fcce2678e3"),
+        imageUrl: localImage("photo-1539533018447-63fcce2678e3"),
         affiliateUrl: "https://www.macys.com/shop/product/trench-coat",
       },
       {
@@ -391,7 +392,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Burberry",
         price: 395,
         retailer: "luxury",
-        imageUrl: UNSPLASH("photo-1520903920243-00d872a2d1c5"),
+        imageUrl: localImage("photo-1520903920243-00d872a2d1c5"),
         affiliateUrl: "https://www.burberry.com/cashmere-scarf",
       },
       {
@@ -400,7 +401,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Clarks",
         price: 87,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1543163521-1bf539c55dd2"),
+        imageUrl: localImage("photo-1543163521-1bf539c55dd2"),
         affiliateUrl: "https://www.macys.com/shop/product/chelsea-boots",
       },
     ],
@@ -408,7 +409,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
   {
     title: "Date Night",
     tagline: "Romantic silhouettes, modern restraint",
-    heroImageUrl: UNSPLASH("photo-1515372039744-b8f02a3ae446"),
+    heroImageUrl: localImage("photo-1515372039744-b8f02a3ae446"),
     totalPrice: 860,
     garments: [
       {
@@ -417,7 +418,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Diane von Furstenberg",
         price: 368,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1595777457583-95e059d581b8"),
+        imageUrl: localImage("photo-1595777457583-95e059d581b8"),
         affiliateUrl: "https://www.macys.com/shop/product/wrap-dress",
       },
       {
@@ -426,7 +427,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Saint Laurent",
         price: 395,
         retailer: "luxury",
-        imageUrl: UNSPLASH("photo-1584917865442-de89df76afd3"),
+        imageUrl: localImage("photo-1584917865442-de89df76afd3"),
         affiliateUrl: "https://www.ysl.com/en-us/bags/clutch",
       },
       {
@@ -435,7 +436,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Sam Edelman",
         price: 97,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1543163521-1bf539c55dd2"),
+        imageUrl: localImage("photo-1543163521-1bf539c55dd2"),
         affiliateUrl: "https://www.macys.com/shop/product/strappy-heels",
       },
     ],
@@ -443,7 +444,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
   {
     title: "Creative Director",
     tagline: "Avant-garde proportions for the bold",
-    heroImageUrl: UNSPLASH("photo-1558618666-fcd25c85cd64"),
+    heroImageUrl: localImage("photo-1558618666-fcd25c85cd64"),
     totalPrice: 2100,
     garments: [
       {
@@ -452,7 +453,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Maison Margiela",
         price: 1290,
         retailer: "luxury",
-        imageUrl: UNSPLASH("photo-1594938298603-c8148c4dae35"),
+        imageUrl: localImage("photo-1594938298603-c8148c4dae35"),
         affiliateUrl: "https://www.maisonmargiela.com/blazer",
       },
       {
@@ -461,7 +462,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Hanes",
         price: 18,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1521572163474-6864f9cf17ab"),
+        imageUrl: localImage("photo-1521572163474-6864f9cf17ab"),
         affiliateUrl: "https://www.macys.com/shop/product/white-tee",
       },
       {
@@ -470,7 +471,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Pleats Please",
         price: 425,
         retailer: "luxury",
-        imageUrl: UNSPLASH("photo-1594633312681-425c7b97ccd1"),
+        imageUrl: localImage("photo-1594633312681-425c7b97ccd1"),
         affiliateUrl: "https://www.isseymiyake.com/trousers",
       },
       {
@@ -479,7 +480,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Dr. Martens",
         price: 168,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1560769629-975ec94aa046"),
+        imageUrl: localImage("photo-1560769629-975ec94aa046"),
         affiliateUrl: "https://www.macys.com/shop/product/doc-martens",
       },
       {
@@ -488,7 +489,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Ray-Ban",
         price: 199,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1572635196233-14fbfa7876a9"),
+        imageUrl: localImage("photo-1572635196233-14fbfa7876a9"),
         affiliateUrl: "https://www.macys.com/shop/product/ray-ban-sunglasses",
       },
     ],
@@ -496,7 +497,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
   {
     title: "Quiet Luxury",
     tagline: "Understated elegance, no logos needed",
-    heroImageUrl: UNSPLASH("photo-1496747611176-843222e1eead"),
+    heroImageUrl: localImage("photo-1496747611176-843222e1eead"),
     totalPrice: 1450,
     garments: [
       {
@@ -505,7 +506,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Naadam",
         price: 295,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1576566588028-4147f3842f27"),
+        imageUrl: localImage("photo-1576566588028-4147f3842f27"),
         affiliateUrl: "https://www.macys.com/shop/product/cashmere-cardigan",
       },
       {
@@ -514,7 +515,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "The Row",
         price: 890,
         retailer: "luxury",
-        imageUrl: UNSPLASH("photo-1594633312681-425c7b97ccd1"),
+        imageUrl: localImage("photo-1594633312681-425c7b97ccd1"),
         affiliateUrl: "https://www.therow.com/trousers",
       },
       {
@@ -523,7 +524,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Margaux",
         price: 185,
         retailer: "macys",
-        imageUrl: UNSPLASH("photo-1543163521-1bf539c55dd2"),
+        imageUrl: localImage("photo-1543163521-1bf539c55dd2"),
         affiliateUrl: "https://www.macys.com/shop/product/ballet-flats",
       },
       {
@@ -532,7 +533,7 @@ const LOOK_TEMPLATES: Omit<OutfitLook, "id" | "tier">[] = [
         brand: "Hermès",
         price: 680,
         retailer: "luxury",
-        imageUrl: UNSPLASH("photo-1624224426880-25c953220102"),
+        imageUrl: localImage("photo-1624224426880-25c953220102"),
         affiliateUrl: "https://www.hermes.com/belt",
       },
     ],

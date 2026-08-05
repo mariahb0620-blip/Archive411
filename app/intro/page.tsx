@@ -2,19 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { INTRO_SLIDES } from "@/app/data/mockCatalog";
 import { useApp } from "@/app/context/AppContext";
 import { EDITORIAL_EASE } from "@/app/lib/motion";
 
-const COLLAGE_IMAGES = [
-  "photo-1529625668260-d7f9d0855913",
-  "photo-1509631179647-0177331693ae",
-  "photo-1515886657613-9f3515b0c78f",
-  "photo-1539008835657-9e8e96875921",
-  "photo-1490481651871-ab68de25d43d",
-  "photo-1469334031218-e382a71b716b",
+const PANEL_TONES = [
+  "bg-[#1a1a1a]",
+  "bg-[#222222]",
+  "bg-[#181818]",
+  "bg-[#242424]",
+  "bg-[#1c1c1c]",
+  "bg-[#202020]",
 ];
 
 export default function IntroPage() {
@@ -37,16 +36,14 @@ export default function IntroPage() {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-ink">
-      <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-1 opacity-30 md:grid-cols-6">
-        {COLLAGE_IMAGES.map((id) => (
-          <div key={id} className="relative overflow-hidden">
-            <Image
-              src={`https://images.unsplash.com/${id}?w=400&q=80&auto=format&fit=crop`}
-              alt=""
-              fill
-              className="object-cover"
-              sizes="200px"
-            />
+      <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-1 opacity-40 md:grid-cols-6">
+        {PANEL_TONES.map((tone, i) => (
+          <div
+            key={i}
+            className={`relative overflow-hidden border border-smoke/20 ${tone}`}
+          >
+            <div className="absolute inset-x-4 bottom-4 h-px bg-smoke/40" />
+            <div className="absolute left-4 top-1/3 h-px w-1/2 bg-accent/30" />
           </div>
         ))}
       </div>

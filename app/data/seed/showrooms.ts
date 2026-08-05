@@ -17,15 +17,14 @@ export const SEED_SHOWROOMS: Showroom[] = [
     city: "Paris",
     country: "France",
     address: "Le Marais, Paris (by appointment)",
-    coverImageUrl:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=85&auto=format&fit=crop",
+    coverImageUrl: "/placeholders/editorial-cover.svg",
     appointmentRequired: true,
     walkInAvailable: false,
     access: "by-appointment",
     designerIds: ["des-paris-archive-ref", "des-linea"],
     categories: ["dresses", "outerwear", "shoes", "handbags"],
     showroomLookbookUrls: [
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=900&q=85&auto=format&fit=crop",
+      "/placeholders/editorial-cover.svg",
     ],
     priceRange: { tier: "250-500", scope: "single-item", currency: "EUR" },
     sizeRange: "XS–L",
@@ -56,8 +55,7 @@ export const SEED_SHOWROOMS: Showroom[] = [
     city: "Ho Chi Minh City",
     country: "Vietnam",
     address: "District 1, Ho Chi Minh City",
-    coverImageUrl:
-      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=85&auto=format&fit=crop",
+    coverImageUrl: "/placeholders/editorial-cover.svg",
     appointmentRequired: true,
     walkInAvailable: true,
     access: "public",
@@ -92,8 +90,7 @@ export const SEED_SHOWROOMS: Showroom[] = [
     city: "New York City",
     country: "United States",
     address: "SoHo, New York City (by appointment)",
-    coverImageUrl:
-      "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=900&q=85&auto=format&fit=crop",
+    coverImageUrl: "/placeholders/editorial-cover.svg",
     appointmentRequired: true,
     walkInAvailable: false,
     access: "private",
