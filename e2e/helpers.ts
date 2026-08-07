@@ -55,5 +55,5 @@ export async function completeBuildFlow(page: Page) {
 
   await page.getByRole("button", { name: /Yes, include shoes/i }).click();
   await page.getByRole("button", { name: "Generate lookbook" }).click();
-  await page.waitForURL(/\/archive/, { timeout: 60000 });
+  await page.waitForURL(/\/lookbooks\//, { timeout: 60000 });
 }

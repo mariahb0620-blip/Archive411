@@ -25,11 +25,11 @@ test.describe("Vercel full user journey", () => {
     await expect(page.getByText(/Home|Discovery/i).first()).toBeVisible({ timeout: 15000 });
   });
 
-  test("Build My Look → saves to archive", async ({ page }) => {
+  test("Build My Look → shows lookbook results", async ({ page }) => {
     await signIn(page, email);
     await completeBuildFlow(page);
-    await expect(page).toHaveURL(/\/archive/);
-    await expect(page.getByText(/Saved lookbooks|Your lookbook was saved/i).first()).toBeVisible({
+    await expect(page).toHaveURL(/\/lookbooks\//);
+    await expect(page.getByRole("button", { name: /Shop now/i }).first()).toBeVisible({
       timeout: 15000,
     });
   });
@@ -38,7 +38,7 @@ test.describe("Vercel full user journey", () => {
     await signIn(page, email);
     await page.goto("/archive");
     await expect(page.getByText(/My Archive|Your fashion library/i).first()).toBeVisible();
-    const savedCard = page.locator('section:has(h2:text("Saved lookbooks")) article').first();
+    const savedCard = page.locator('a[href*="/lookbooks/"]').first();
     await expect(savedCard).toBeVisible({ timeout: 15000 });
     await page.reload();
     await expect(savedCard).toBeVisible({ timeout: 15000 });
@@ -47,36 +47,28 @@ test.describe("Vercel full user journey", () => {
   test("sign out → sign in → archive still there", async ({ page }) => {
     await signIn(page, email);
     await page.goto("/archive");
-    await expect(page.locator('section:has(h2:text("Saved lookbooks")) article').first()).toBeVisible({
-      timeout: 15000,
-    });
+    await expect(page.locator('a[href*="/lookbooks/"]').first()).toBeVisible({ timeout: 15000 });
     await signOut(page);
     await signIn(page, email);
     await page.goto("/archive");
-    await expect(page.locator('section:has(h2:text("Saved lookbooks")) article').first()).toBeVisible({
-      timeout: 15000,
-    });
+    await expect(page.locator('a[href*="/lookbooks/"]').first()).toBeVisible({ timeout: 15000 });
   });
 
-  test("search saves to archive", async ({ page }) => {
+  test("search opens lookbook results", async ({ page }) => {
     await signIn(page, email);
     await page.goto("/search");
     await page.getByRole("button", { name: "Search looks" }).first().click();
-    await page.waitForURL(/\/archive/, { timeout: 60000 });
-    await expect(page.getByText(/Saved lookbooks|Your lookbook was saved/i).first()).toBeVisible({
-      timeout: 15000,
-    });
+    await page.waitForURL(/\/lookbooks\//, { timeout: 60000 });
+    await expect(page.getByText(/Lookbook/i).first()).toBeVisible({ timeout: 15000 });
   });
 
-  test("surprise me saves to archive", async ({ page }) => {
+  test("surprise me opens lookbook after save", async ({ page }) => {
     await signIn(page, email);
     await page.goto("/surprise");
     await page.getByRole("button", { name: /Surprise me/i }).click();
     await page.getByRole("button", { name: /Save to Archive/i }).click();
-    await page.waitForURL(/\/archive/, { timeout: 60000 });
-    await expect(page.getByText(/Saved lookbooks|Your lookbook was saved/i).first()).toBeVisible({
-      timeout: 15000,
-    });
+    await page.waitForURL(/\/lookbooks\//, { timeout: 60000 });
+    await expect(page.getByText(/Lookbook/i).first()).toBeVisible({ timeout: 15000 });
   });
 
   test("collections page — create collection", async ({ page }) => {

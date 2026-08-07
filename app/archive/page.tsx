@@ -68,7 +68,7 @@ function ArchiveContent() {
 
         {justGenerated && (
           <p className="mb-8 rounded-lg border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-ivory">
-            Your lookbook was saved to Archive. Full outfit browsing is coming in a future update.
+            Your lookbook was saved. Tap a card below to browse outfits and shop pieces.
           </p>
         )}
 
@@ -90,9 +90,10 @@ function ArchiveContent() {
           <h2 className="text-[10px] uppercase tracking-[0.3em] text-muted">Saved lookbooks</h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {lookbooks.map((lb) => (
-              <article
+              <Link
                 key={lb.id}
-                className="overflow-hidden rounded-xl border border-smoke/50 bg-charcoal md:rounded-none"
+                href={`/lookbooks/${lb.id}`}
+                className="overflow-hidden rounded-xl border border-smoke/50 bg-charcoal transition-colors hover:border-accent/40 md:rounded-none"
               >
                 <div className="relative aspect-[3/4] overflow-hidden">
                   <AppImage
@@ -116,7 +117,7 @@ function ArchiveContent() {
                     ))}
                   </div>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </section>

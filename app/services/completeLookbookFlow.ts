@@ -18,7 +18,7 @@ type SaveLookbookFn = (
   }
 ) => Promise<void>;
 
-/** Store session, save to archive, and skip the removed lookbook detail page. */
+/** Store session, save to archive, then open the lookbook detail view. */
 export async function completeLookbookFlow(
   router: AppRouterInstance,
   saveLookbook: SaveLookbookFn,
@@ -45,5 +45,13 @@ export async function completeLookbookFlow(
     products: params.products,
   });
 
-  router.push("/archive?generated=1");
+  storeLookbookSession(
+    { ...params.lookbook, saved: true },
+    params.looks,
+    params.method,
+    params.buildPreferences,
+    params.products
+  );
+
+  router.push(`/lookbooks/${params.lookbook.id}`);
 }
