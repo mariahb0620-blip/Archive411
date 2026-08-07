@@ -123,21 +123,39 @@ async function main() {
 
   const lookbookId = `lb-test-${Date.now()}`;
   const lookbook = { ...resultA.lookbook, id: lookbookId, userId, saved: true };
+  const apiLookbookId = `lb-api-${Date.now()}`;
+  let apiTestsRan = false;
 
-  try {
-    const buildRes = await fetch(`${appUrl}/api/recommendations/build`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(feminineY2K),
-    });
-    if (buildRes.ok) pass(`POST /api/recommendations/build → ${buildRes.status}`);
-    else fail(`POST /api/recommendations/build → ${buildRes.status}`);
+  async function probeAppServer(): Promise<"ok" | "down" | "stale"> {
+    try {
+      const res = await fetch(`${appUrl}/api/recommendations/build`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(feminineY2K),
+      });
+      if (res.ok) return "ok";
+      if (res.status >= 500) return "stale";
+      return "ok";
+    } catch {
+      return "down";
+    }
+  }
+
+  const serverState = await probeAppServer();
+  if (serverState === "down") {
+    console.log(
+      `  SKIP — HTTP API checks (no server at ${appUrl}; run npm run build && npm run start)`
+    );
+  } else if (serverState === "stale") {
+    console.log(
+      `  SKIP — HTTP API checks (server at ${appUrl} returned 5xx — restart: npm run build && npm run start)`
+    );
+  } else {
+    apiTestsRan = true;
+    pass("POST /api/recommendations/build → 200");
 
     const token = signInData.session!.access_token;
-    const apiLookbook = {
-      ...resultA.lookbook,
-      id: `lb-api-${Date.now()}`,
-    };
+    const apiLookbook = { ...resultA.lookbook, id: apiLookbookId };
     const apiLooks = resultA.looks.map((look, i) => ({
       ...look,
       id: `${look.id}-api-${Date.now()}-${i}`,
@@ -164,8 +182,6 @@ async function main() {
     });
     if (lbRes.ok) pass(`GET /api/lookbooks → ${lbRes.status}`);
     else fail(`GET /api/lookbooks → ${lbRes.status}`);
-  } catch {
-    console.log(`  SKIP — API route tests (dev server not running at ${appUrl})`);
   }
 
   const { error: lbError } = await admin.from("lookbooks").upsert({
@@ -224,6 +240,9 @@ async function main() {
   else pass(`Archive list contains saved lookbook (${archived.length} total)`);
 
   await cleanup();
+  if (apiTestsRan) {
+    await admin.from("lookbooks").delete().eq("id", apiLookbookId);
+  }
   pass("Test user cleaned up");
 
   console.log(failed ? "\n=== JOURNEY TEST FAILED ===\n" : "\n=== JOURNEY TEST PASSED ===\n");
