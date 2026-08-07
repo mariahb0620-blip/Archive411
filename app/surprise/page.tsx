@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppHeader from "@/app/components/AppHeader";
 import EditorialButton from "@/app/components/EditorialButton";
+import AppPageMain from "@/app/components/AppPageMain";
 import RouteGuard from "@/app/components/RouteGuard";
 import { DEFAULT_PRICE_RANGE } from "@/app/data/mockCatalog";
 import {
@@ -42,15 +43,15 @@ function SurpriseContent() {
   return (
     <div className="min-h-screen bg-ink">
       <AppHeader />
-      <main id="main-content" tabIndex={-1} className="container-editorial pt-24 pb-16 md:pt-28">
-        <p className="text-[10px] uppercase tracking-[0.35em] text-muted">
-          Surprise Me
-        </p>
-        <h1 className="mt-4 font-display text-4xl text-ivory">Something unexpected</h1>
-        <p className="mt-4 max-w-xl text-sm text-muted">
-          Set a few constraints — Archive411 selects an aesthetic direction and
-          builds a lookbook.
-        </p>
+      <AppPageMain className="max-w-2xl space-y-8">
+        <header>
+          <p className="text-[10px] uppercase tracking-[0.35em] text-muted">Surprise Me</p>
+          <h1 className="mt-2 font-display text-3xl text-ivory">Something unexpected</h1>
+          <p className="mt-3 text-sm text-muted">
+            Set a few constraints — Archive411 selects an aesthetic direction and builds a lookbook
+            from the verified catalog.
+          </p>
+        </header>
 
         {!result ? (
           <div className="mt-10 max-w-lg space-y-6">
@@ -106,7 +107,7 @@ function SurpriseContent() {
             </div>
           </div>
         )}
-      </main>
+      </AppPageMain>
     </div>
   );
 }

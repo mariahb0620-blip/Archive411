@@ -1,9 +1,10 @@
 "use client";
 
-import Image from "next/image";
+import AppImage from "@/app/components/AppImage";
 import { useParams } from "next/navigation";
 import AppHeader from "@/app/components/AppHeader";
 import EditorialButton from "@/app/components/EditorialButton";
+import AppPageMain from "@/app/components/AppPageMain";
 import RouteGuard from "@/app/components/RouteGuard";
 import {
   getDesignerBySlug,
@@ -29,9 +30,9 @@ function DesignerProfileContent() {
   return (
     <div className="min-h-screen bg-ink">
       <AppHeader />
-      <main id="main-content" tabIndex={-1} className="container-editorial pt-24 pb-16 md:pt-28">
+      <AppPageMain>
         <div className="relative mb-10 aspect-[21/9] overflow-hidden border border-smoke/40">
-          <Image src={designer.coverImageUrl} alt={designer.labelName} fill className="object-cover" sizes="1200px" />
+          <AppImage src={designer.coverImageUrl} alt={designer.labelName} fill className="object-cover" sizes="1200px" />
         </div>
 
         <header className="border-b border-smoke/30 pb-8">
@@ -46,8 +47,12 @@ function DesignerProfileContent() {
             </p>
           )}
           <div className="mt-4 flex flex-wrap gap-3">
-            <EditorialButton variant="ghost">Save designer</EditorialButton>
-            <EditorialButton variant="ghost">Follow designer</EditorialButton>
+            <EditorialButton variant="ghost" disabled>
+              Save designer (soon)
+            </EditorialButton>
+            <EditorialButton variant="ghost" disabled>
+              Follow designer (soon)
+            </EditorialButton>
             {designer.requestDesignerEnabled && (
               <EditorialButton href="/for-designers/apply" variant="ghost">
                 Request This Designer
@@ -77,7 +82,7 @@ function DesignerProfileContent() {
             {products.map((p) => (
               <div key={p.id} className="border border-smoke/50 bg-charcoal">
                 <div className="relative aspect-square">
-                  <Image src={p.imageUrls[0]} alt={p.name} fill className="object-cover" sizes="300px" />
+                  <AppImage src={p.imageUrls[0]} alt={p.name} fill className="object-cover" sizes="300px" />
                 </div>
                 <div className="p-4">
                   <p className="text-sm text-ivory">{p.name}</p>
@@ -91,7 +96,7 @@ function DesignerProfileContent() {
         {designer.isPlaceholder && (
           <p className="text-[10px] uppercase tracking-[0.2em] text-smoke">Placeholder designer data</p>
         )}
-      </main>
+      </AppPageMain>
     </div>
   );
 }

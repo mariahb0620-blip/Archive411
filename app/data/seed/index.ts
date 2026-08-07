@@ -9,39 +9,40 @@ import { SEED_SHOWROOMS } from "./showrooms";
 import { applyShowroomPatches } from "./showroomProducts";
 import {
   normalizeProductImagery,
-  normalizeCoverImageUrl,
-  placeholderFromSeed,
-  isStockOrAiImageUrl,
-  EDITORIAL_PLACEHOLDER,
+  entityCoverImage,
 } from "@/app/data/productImagery";
-
-function entityCover(id: string, url?: string): string {
-  if (!url || isStockOrAiImageUrl(url) || url === EDITORIAL_PLACEHOLDER) {
-    return placeholderFromSeed(id);
-  }
-  return normalizeCoverImageUrl(url);
-}
 
 export const MOCK_DESIGNERS = [...SEED_DESIGNERS, ...SEED_DESIGNERS_EXTENDED].map((d) => ({
   ...d,
-  coverImageUrl: entityCover(d.id, d.coverImageUrl),
+  coverImageUrl: entityCoverImage({
+    id: d.id,
+    slug: d.slug,
+    fallbackUrl: d.coverImageUrl,
+    kind: "designer",
+  }),
 }));
 export const MOCK_CONCEPT_STORES = SEED_CONCEPT_STORES.map((s) => ({
   ...s,
-  coverImageUrl: entityCover(s.id, s.coverImageUrl),
+  coverImageUrl: entityCoverImage({ id: s.id, fallbackUrl: s.coverImageUrl }),
 }));
 export const MOCK_VINTAGE_SELLERS = SEED_VINTAGE_SELLERS.map((s) => ({
   ...s,
-  coverImageUrl: entityCover(s.id, s.coverImageUrl),
+  coverImageUrl: entityCoverImage({ id: s.id, fallbackUrl: s.coverImageUrl }),
 }));
 export const MOCK_SHOWROOMS = SEED_SHOWROOMS.map((s) => ({
   ...s,
-  coverImageUrl: entityCover(s.id, s.coverImageUrl),
+  coverImageUrl: entityCoverImage({ id: s.id, fallbackUrl: s.coverImageUrl }),
   showroomLookbookUrls: (s.showroomLookbookUrls ?? []).map((url, i) =>
-    entityCover(`${s.id}-look-${i}`, url)
+    entityCoverImage({ id: `${s.id}-look-${i}`, fallbackUrl: url })
   ),
 }));
 export const MOCK_PRODUCTS = applyShowroomPatches([
   ...SEED_PRODUCTS,
   ...SEED_PRODUCTS_EXTENDED,
-]).map(normalizeProductImagery);
+]).map((p) => {
+  const normalized = normalizeProductImagery(p);
+  if (normalized.productUrl.includes("example.com")) {
+    return { ...normalized, isReferenceExample: true };
+  }
+  return normalized;
+});

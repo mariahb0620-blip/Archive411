@@ -513,6 +513,8 @@ export interface BuildLookAnswers {
   stylingEffects?: string[];
   /** Optional fashion community influences — user-selected, never inferred. */
   fashionCommunities?: string[];
+  /** Optional style inspiration directions — opt-in only, mapped to aesthetic tags. */
+  styleInspirations?: string[];
   coverageLevel?: CoverageLevel;
   kawaiiIntensity?: KawaiiIntensity;
 }

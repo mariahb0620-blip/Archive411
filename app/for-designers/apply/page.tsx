@@ -32,10 +32,9 @@ function ApplyContent() {
     editorialFeatureInterest: false,
   });
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const application: DesignerApplication = {
-      id: `app-${Date.now()}`,
+    const payload = {
       designerName: form.designerName,
       labelName: form.labelName,
       contactEmail: form.contactEmail,
@@ -52,6 +51,22 @@ function ApplyContent() {
       customSizing: form.customSizing,
       madeToOrder: form.madeToOrder,
       shippingRegions: form.shippingRegions.split(",").map((s) => s.trim()),
+      connectionType: form.connectionType,
+    };
+
+    try {
+      await fetch("/api/designer-applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      // fall through to localStorage backup
+    }
+
+    const application: DesignerApplication = {
+      id: `app-${Date.now()}`,
+      ...payload,
       connectionType: form.connectionType as DesignerApplication["connectionType"],
       productCount: form.productCount ? Number(form.productCount) : undefined,
       imagePermissionAgreed: form.imagePermissionAgreed,

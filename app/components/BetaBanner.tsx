@@ -29,8 +29,7 @@ export default function BetaBanner() {
             Beta
           </span>
           {" · "}
-          Product data is mock for testing. Try Build My Look or Search — then tell
-          us what worked.
+          Product data comes from a verified beta catalog. Build My Look and Search use real designer links — coverage is limited while we expand.
         </p>
         <div className="flex shrink-0 items-center gap-4">
           <a

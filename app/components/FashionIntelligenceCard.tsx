@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import AppImage from "@/app/components/AppImage";
 import { motion } from "framer-motion";
 import type { LookbookProfile } from "@/app/types/fashionIntelligence";
 import { formatIntelligencePrice } from "@/app/utils/fashionIntelligenceHelpers";
@@ -46,7 +46,7 @@ export default function FashionIntelligenceCard({
     >
       <div className="relative overflow-hidden border border-smoke/50 bg-charcoal">
         <div className="relative aspect-[3/4] overflow-hidden">
-          <Image
+          <AppImage
             src={profile.heroImageUrl}
             alt={profile.title}
             fill

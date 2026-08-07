@@ -2,18 +2,16 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import AppImage from "@/app/components/AppImage";
 import { useRouter, useSearchParams } from "next/navigation";
 import AppHeader from "@/app/components/AppHeader";
 import EditorialButton from "@/app/components/EditorialButton";
 import EmptyState from "@/app/components/EmptyState";
+import AppPageMain from "@/app/components/AppPageMain";
 import RouteGuard from "@/app/components/RouteGuard";
 import { DESIGNER_LABEL_DISPLAY } from "@/app/data/aestheticTags";
-import {
-  INDEPENDENT_SECTIONS,
-  MOCK_CONCEPT_STORES,
-  MOCK_DESIGNERS,
-} from "@/app/data/mockCatalog";
+import { INDEPENDENT_SECTIONS, MOCK_CONCEPT_STORES } from "@/app/data/mockCatalog";
+import { getVerifiedDesignersSync } from "@/lib/catalog/verifiedPool";
 import {
   generateIndependentLookbook,
   storeLookbookSession,
@@ -28,7 +26,7 @@ function IndependentContent() {
 
   const filtered = useMemo(
     () =>
-      MOCK_DESIGNERS.filter((d) => {
+      getVerifiedDesignersSync().filter((d) => {
         if (city && !d.city.toLowerCase().includes(city.toLowerCase())) return false;
         if (madeToOrder && !d.madeToOrder) return false;
         if (customSizing && !d.customSizing) return false;
@@ -46,7 +44,7 @@ function IndependentContent() {
   return (
     <div className="min-h-screen bg-ink">
       <AppHeader />
-      <main id="main-content" tabIndex={-1} className="container-editorial pt-24 pb-16 md:pt-28">
+      <AppPageMain>
         <p className="text-[10px] uppercase tracking-[0.35em] text-accent">The Independent Edit</p>
         <h1 className="mt-4 font-display text-4xl text-ivory md:text-5xl">The Independent Edit</h1>
         <p className="mt-4 max-w-2xl text-sm text-muted">
@@ -69,7 +67,7 @@ function IndependentContent() {
             label="City"
             value={city}
             onChange={setCity}
-            options={[...new Set(MOCK_DESIGNERS.map((d) => d.city))]}
+            options={[...new Set(getVerifiedDesignersSync().map((d) => d.city))]}
           />
           <Toggle label="Made to order" checked={madeToOrder} onChange={setMadeToOrder} />
           <Toggle label="Custom sizing" checked={customSizing} onChange={setCustomSizing} />
@@ -96,7 +94,7 @@ function IndependentContent() {
                   className="border border-smoke/50 bg-charcoal"
                 >
                   <div className="relative aspect-[4/3]">
-                    <Image
+                    <AppImage
                       src={designer.coverImageUrl}
                       alt={designer.labelName}
                       fill
@@ -147,7 +145,7 @@ function IndependentContent() {
                 className="group border border-smoke/50 bg-charcoal"
               >
                 <div className="relative aspect-[16/10] overflow-hidden">
-                  <Image
+                  <AppImage
                     src={store.coverImageUrl}
                     alt={store.name}
                     fill
@@ -182,7 +180,7 @@ function IndependentContent() {
             </Link>
           </div>
         </section>
-      </main>
+      </AppPageMain>
     </div>
   );
 }

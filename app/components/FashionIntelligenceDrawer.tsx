@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import Image from "next/image";
+import AppImage from "@/app/components/AppImage";
 import { AnimatePresence, motion } from "framer-motion";
 import type { LookbookProfile, IntelligenceGarment } from "@/app/types/fashionIntelligence";
 import {
@@ -81,7 +81,7 @@ export default function FashionIntelligenceDrawer({
             exit="exit"
           >
             <div className="relative aspect-[16/10] shrink-0 overflow-hidden border-b border-smoke/40">
-              <Image
+              <AppImage
                 src={profile.heroImageUrl}
                 alt={profile.title}
                 fill
@@ -156,7 +156,7 @@ export default function FashionIntelligenceDrawer({
                       className="flex gap-4 py-6 first:pt-0 last:pb-0"
                     >
                       <div className="relative h-24 w-20 shrink-0 overflow-hidden border border-smoke/40 bg-smoke">
-                        <Image
+                        <AppImage
                           src={garment.imageUrl}
                           alt={garment.name}
                           fill

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import AppImage from "@/app/components/AppImage";
 import { useParams } from "next/navigation";
 import AppHeader from "@/app/components/AppHeader";
 import EditorialButton from "@/app/components/EditorialButton";
@@ -38,7 +38,7 @@ function ShowroomDetailContent() {
       <AppHeader />
       <main id="main-content" tabIndex={-1} className="container-editorial pt-24 pb-16 md:pt-28">
         <div className="relative mb-10 aspect-[21/9] overflow-hidden border border-smoke/40">
-          <Image src={showroom.coverImageUrl} alt={showroom.name} fill className="object-cover" sizes="1200px" priority />
+          <AppImage src={showroom.coverImageUrl} alt={showroom.name} fill className="object-cover" sizes="1200px" priority />
         </div>
 
         <p className="text-[10px] uppercase tracking-[0.35em] text-accent">
@@ -111,7 +111,7 @@ function ShowroomDetailContent() {
             {products.map((product) => (
               <li key={product.id} className="flex gap-4 py-6">
                 <div className="relative h-24 w-20 shrink-0 overflow-hidden border border-smoke/40">
-                  <Image src={product.imageUrls[0]} alt={product.name} fill className="object-cover" sizes="80px" />
+                  <AppImage src={product.imageUrls[0]} alt={product.name} fill className="object-cover" sizes="80px" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-ivory">{product.name}</p>

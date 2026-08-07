@@ -35,7 +35,7 @@ export default function IntroPage() {
   const current = INTRO_SLIDES[slide];
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-ink">
+    <div className="relative flex min-h-[100dvh] flex-col bg-ink" style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
       <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-1 opacity-40 md:grid-cols-6">
         {PANEL_TONES.map((tone, i) => (
           <div
@@ -49,7 +49,7 @@ export default function IntroPage() {
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/90 to-ink/70" />
 
-      <div className="relative z-10 flex flex-1 flex-col justify-between px-6 pb-10 pt-16 md:px-12">
+      <div className="relative z-10 flex flex-1 flex-col justify-between px-5 pb-8 pt-12 md:px-12 md:pb-10 md:pt-16">
         <p className="font-display text-sm uppercase tracking-[0.35em] text-accent">
           archive.411
         </p>

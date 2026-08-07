@@ -15,6 +15,7 @@ import {
 } from "@/app/data/buildQuestionnaire";
 import { DEFAULT_PRICE_RANGE, PRICE_TIER_LABELS } from "@/app/data/mockCatalog";
 import { STYLE_COMMUNITIES } from "@/app/data/styleCommunities";
+import { STYLE_INSPIRATION_OPTIONS } from "@/app/data/styleInspiration";
 import type { BuildLookAnswers } from "@/app/types/domain";
 
 function SelectChip({
@@ -30,7 +31,7 @@ function SelectChip({
     <button
       type="button"
       onClick={onClick}
-      className={`min-h-11 rounded-sm border px-4 py-3 text-left text-sm transition-colors ${
+      className={`min-h-11 rounded-xl border px-4 py-3 text-left text-sm transition-colors active:scale-[0.98] ${
         selected
           ? "border-accent bg-accent/10 text-accent"
           : "border-smoke/50 text-ivory hover:border-smoke"
@@ -43,7 +44,7 @@ function SelectChip({
 
 /** Full-width selectable cards — do not use touch-target (breaks multi-line layout). */
 const OPTION_CARD_BASE =
-  "w-full border p-5 text-left transition-colors min-h-[4.5rem]";
+  "w-full rounded-xl border p-5 text-left transition-colors min-h-[4.5rem] active:scale-[0.99]";
 
 const OPTION_CARD_SELECTED = "border-accent bg-accent/5";
 const OPTION_CARD_DEFAULT = "border-smoke/50 hover:border-smoke";
@@ -780,8 +781,51 @@ export function ContextBriefStep({
   );
 }
 
+export function StyleInspirationStep({
+  answers,
+  onChange,
+}: {
+  answers: BuildLookAnswers;
+  onChange: (patch: Partial<BuildLookAnswers>) => void;
+}) {
+  const selected = answers.styleInspirations ?? [];
+
+  const toggle = (id: string) => {
+    const next = selected.includes(id)
+      ? selected.filter((s) => s !== id)
+      : [...selected, id];
+    onChange({ styleInspirations: next });
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted">
+        Optional — pick style directions that resonate. Never inferred from how you look.
+      </p>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {STYLE_INSPIRATION_OPTIONS.map((opt) => (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => toggle(opt.id)}
+            className={`rounded-xl border p-4 text-left transition-colors active:scale-[0.98] ${
+              selected.includes(opt.id)
+                ? "border-accent bg-accent/10"
+                : "border-smoke/50 hover:border-smoke"
+            }`}
+          >
+            <span className="text-sm font-medium text-ivory">{opt.label}</span>
+            <p className="mt-1 text-xs text-muted">{opt.description}</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export const STEP_PROMPTS: Record<BuildStepId, string> = {
   styleDirections: "What styles should shape this look?",
+  styleInspiration: "Any inspiration directions? (optional)",
   clothingPresentation: "How would you like the clothing to be presented?",
   clothingSizes: "What sizes should we search for?",
   contextBrief: "Set the scene for your lookbook",

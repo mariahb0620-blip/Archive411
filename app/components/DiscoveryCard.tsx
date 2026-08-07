@@ -25,17 +25,24 @@ export default function DiscoveryCard({
     >
       <Link
         href={href}
-        className="group block border border-smoke/50 bg-charcoal p-6 transition-colors hover:border-accent/60 md:p-8"
+        className="group mobile-card flex items-start justify-between gap-4 p-5 transition-colors active:scale-[0.98] active:bg-smoke/20 md:rounded-none md:p-8 md:active:scale-100"
       >
-        <p className="text-[10px] uppercase tracking-[0.3em] text-muted">
-          {String(index + 1).padStart(2, "0")}
-        </p>
-        <h3 className="mt-3 font-display text-2xl text-ivory md:text-3xl">
-          {title}
-        </h3>
-        <p className="mt-3 text-sm leading-relaxed text-muted">{description}</p>
-        <span className="mt-6 inline-block text-[10px] uppercase tracking-[0.25em] text-accent transition-colors group-hover:text-ivory">
-          Explore →
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-muted md:block">
+            {String(index + 1).padStart(2, "0")}
+          </p>
+          <h3 className="mt-2 font-display text-xl text-ivory md:mt-3 md:text-3xl">
+            {title}
+          </h3>
+          <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted md:mt-3 md:line-clamp-none">
+            {description}
+          </p>
+          <span className="mt-4 hidden text-[10px] uppercase tracking-[0.25em] text-accent transition-colors group-hover:text-ivory md:inline-block">
+            Explore →
+          </span>
+        </div>
+        <span className="mt-1 shrink-0 text-lg text-muted md:hidden" aria-hidden>
+          →
         </span>
       </Link>
     </motion.div>

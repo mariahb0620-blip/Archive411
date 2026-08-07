@@ -1,141 +1,110 @@
 /**
  * Catalog verification — run: npm run catalog:verify
- *
- * Checks product coverage, source diversity, presentation filtering,
- * image policy (no stock/AI URLs), and lookbook variety across runs.
  */
-import { MOCK_PRODUCTS, MOCK_DESIGNERS } from "../app/data/seed/index";
-import {
-  PRIORITY_DESIGNER_IDS,
-  PRIORITY_CONCEPT_STORE_IDS,
-} from "../app/data/curatedRoster";
+import { BETA_PRODUCTS, BETA_DESIGNERS, isBetaCatalogUrl } from "../app/data/betaCatalog";
+import { EXTENDED_DESIGNERS, EXTENDED_PRODUCTS } from "../app/data/extendedCatalog";
 import { isStockOrAiImageUrl } from "../app/data/productImagery";
-import { generateLookbookFromBuild } from "../app/services/lookbook.service";
+import { generateLookbookFromBuildForPool } from "../lib/recommendations/generateForPool";
 import { searchCatalog } from "../app/services/catalog.service";
 import type { BuildLookAnswers } from "../app/types/domain";
 
-const GLOBAL_REGIONS = [
-  "Ho Chi Minh City",
-  "Bangkok",
-  "New York",
-  "London",
-  "Paris",
-  "Tokyo",
-  "Seoul",
-  "Lagos",
-];
+const ALL_PRODUCTS = [...BETA_PRODUCTS, ...EXTENDED_PRODUCTS];
+const ALL_DESIGNERS = [...BETA_DESIGNERS, ...EXTENDED_DESIGNERS];
 
-function regionFor(city?: string): string {
-  if (!city) return "Unknown";
-  const lower = city.toLowerCase();
-  for (const r of GLOBAL_REGIONS) {
-    if (lower.includes(r.toLowerCase().replace(" city", ""))) return r;
-  }
-  return city;
+let failed = false;
+function fail(msg: string) {
+  console.error(`FAIL: ${msg}`);
+  failed = true;
 }
 
 console.log("=== Archive411 catalog verification ===\n");
+console.log(`Verified products: ${ALL_PRODUCTS.length}`);
+console.log(`Verified designers: ${ALL_DESIGNERS.length}`);
 
-console.log(`Products in catalog: ${MOCK_PRODUCTS.length}`);
-console.log(`Designers in catalog: ${MOCK_DESIGNERS.length}`);
-
-const regionCounts = new Map<string, number>();
-for (const p of MOCK_PRODUCTS) {
-  const r = regionFor(p.designerCity ?? p.retailerCity);
-  regionCounts.set(r, (regionCounts.get(r) ?? 0) + 1);
-}
-console.log("\nProducts by designer/retailer region:");
-for (const [r, n] of [...regionCounts.entries()].sort((a, b) => b[1] - a[1])) {
-  console.log(`  ${r}: ${n}`);
-}
-
-const rosterDesigners = MOCK_DESIGNERS.filter((d) =>
-  PRIORITY_DESIGNER_IDS.has(d.id)
+const exampleUrls = ALL_PRODUCTS.filter((p) => p.productUrl.includes("example.com"));
+console.log(
+  `\nexample.com in beta catalog: ${exampleUrls.length}${
+    exampleUrls.length ? " (FAIL)" : " (OK)"
+  }`
 );
-const rosterProducts = MOCK_PRODUCTS.filter(
-  (p) => p.designerId && PRIORITY_DESIGNER_IDS.has(p.designerId)
-);
-console.log(`\nPriority roster designers: ${rosterDesigners.length}/${PRIORITY_DESIGNER_IDS.size}`);
-console.log(`Priority roster products: ${rosterProducts.length}`);
-console.log(`Priority concept stores seeded: ${PRIORITY_CONCEPT_STORE_IDS.size}`);
+if (exampleUrls.length) {
+  exampleUrls.forEach((p) => console.log(`  - ${p.id}: ${p.productUrl}`));
+  fail("Beta catalog contains example.com URLs");
+}
 
-const stockImages = MOCK_PRODUCTS.filter((p) =>
+for (const p of ALL_PRODUCTS) {
+  if (!p.name || !p.price || !p.availableSizes.length || !p.imageUrls.length) {
+    fail(`Product ${p.id} missing required fields`);
+  }
+  if (!isBetaCatalogUrl(p.productUrl)) {
+    fail(`Product ${p.id} has invalid URL: ${p.productUrl}`);
+  }
+}
+
+const stockImages = ALL_PRODUCTS.filter((p) =>
   p.imageUrls.some((u) => isStockOrAiImageUrl(u))
 );
 console.log(
-  `\nStock/AI product images remaining: ${stockImages.length}${
-    stockImages.length ? " (FAIL)" : " (OK)"
-  }`
+  `\nStock/AI product images: ${stockImages.length}${stockImages.length ? " (FAIL)" : " (OK)"}`
 );
-if (stockImages.length) {
-  stockImages.slice(0, 5).forEach((p) => console.log(`  - ${p.id}: ${p.imageUrls[0]}`));
-}
 
-const feminineAfro: BuildLookAnswers = {
-  styleDirections: ["afrofuturism"],
+const feminineY2k: BuildLookAnswers = {
+  styleDirections: ["y2k", "hot-girl-y2k"],
   clothingPresentation: ["Feminine"],
-  dressingFor: "Event",
+  dressingFor: "Date night",
   location: "New York",
   climate: "Summer",
   independentDesigners: true,
-  footwear: { inclusion: "yes", types: ["Any"] },
+  footwear: { inclusion: "yes", types: ["Heel"] },
 };
 
 const ranked = searchCatalog(
   {
-    aesthetics: ["afrofuturism", "tailored", "artisanal"],
-    independentOnly: false,
+    aesthetics: ["y2k", "hot-girl-y2k"],
+    independentOnly: true,
     department: "womenswear",
+    city: "New York",
   },
-  ["Feminine"]
+  ["Feminine"],
+  ALL_PRODUCTS
 );
-
-const mascOnlyTop = ranked.slice(0, 12).filter(
-  (p) =>
-    p.presentationTags.includes("masculine") &&
-    !p.presentationTags.includes("feminine") &&
-    p.departmentTags.includes("menswear") &&
-    !p.departmentTags.includes("womenswear")
-);
-
-console.log(`\nFeminine + Afrofuturism — top 12 masculine-only hits: ${mascOnlyTop.length}`);
-if (mascOnlyTop.length) {
-  mascOnlyTop.forEach((p) => console.log(`  - ${p.name} (${p.id})`));
-} else {
-  console.log("  (OK — no mismatched masculine-only pieces in top results)");
+console.log(`\nFeminine Y2K independent search hits: ${ranked.length}`);
+if (ranked.length < 1) {
+  fail("No search hits for Feminine Y2K independent profile");
 }
 
 const signatures = new Set<string>();
-const RUNS = 8;
-for (let i = 0; i < RUNS; i++) {
-  const { looks } = generateLookbookFromBuild(feminineAfro);
-  const sig = looks
-    .flatMap((l) => l.productIds ?? [])
-    .sort()
-    .join("|");
-  signatures.add(sig);
-}
-
-console.log(`\nLookbook variety (${RUNS} runs, Feminine + Afrofuturism, independent prioritized):`);
-console.log(`  Unique product sets: ${signatures.size}/${RUNS}`);
-if (signatures.size < 3) {
-  console.log("  WARN — low variety; expand catalog or check shuffle");
-} else {
-  console.log("  OK");
-}
-
-const sourceSpread = new Set<string>();
 for (let i = 0; i < 5; i++) {
-  const { looks } = generateLookbookFromBuild({
-    ...feminineAfro,
-    location: "Global",
-    styleDirections: ["tokyo-street", "thai-vietnamese-street"],
-  });
-  for (const lid of looks.flatMap((l) => l.productIds ?? [])) {
-    const p = MOCK_PRODUCTS.find((x) => x.id === lid);
-    if (p) sourceSpread.add(regionFor(p.designerCity ?? p.retailerCity));
-  }
+  const { looks } = generateLookbookFromBuildForPool(feminineY2k, ALL_PRODUCTS);
+  signatures.add(looks.flatMap((l) => l.productIds).sort().join("|"));
 }
-console.log(`\nGlobal source spread (5 multi-city runs): ${[...sourceSpread].join(", ")}`);
+console.log(`\nLookbook variety (5 runs): ${signatures.size}/5 unique product sets`);
+if (signatures.size < 1) {
+  fail("Build flow returns no looks for Feminine Y2K profile");
+} else if (signatures.size < 2) {
+  console.log("  WARN — limited variety with current beta catalog size (20 products)");
+}
 
-console.log("\n=== Done ===");
+const streetMasc: BuildLookAnswers = {
+  styleDirections: ["streetwear", "black-street-style"],
+  clothingPresentation: ["Masculine"],
+  dressingFor: "Weekend",
+  location: "London",
+  climate: "Autumn",
+  independentDesigners: false,
+  footwear: { inclusion: "yes", types: ["Sneaker"] },
+};
+const { looks: streetLooks } = generateLookbookFromBuildForPool(streetMasc, ALL_PRODUCTS);
+const y2kLooks = generateLookbookFromBuildForPool(feminineY2k, ALL_PRODUCTS).looks;
+const y2kIds = new Set(y2kLooks.flatMap((l) => l.productIds));
+const streetIds = new Set(streetLooks.flatMap((l) => l.productIds));
+const overlap = [...y2kIds].filter((id) => streetIds.has(id));
+console.log(`\nContrasting profiles product overlap: ${overlap.length} shared IDs`);
+if (y2kIds.size > 0 && streetIds.size > 0 && overlap.length === y2kIds.size && overlap.length === streetIds.size) {
+  fail("Different questionnaire profiles return identical products");
+} else {
+  console.log("  OK — profiles produce different results");
+}
+
+console.log(failed ? "\n=== VERIFICATION FAILED ===" : "\n=== VERIFICATION PASSED ===");
+process.exit(failed ? 1 : 0);

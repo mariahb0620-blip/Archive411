@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AppHeader from "@/app/components/AppHeader";
 import DiscoveryCard from "@/app/components/DiscoveryCard";
 import EditorialButton from "@/app/components/EditorialButton";
+import AppPageMain from "@/app/components/AppPageMain";
 import RouteGuard from "@/app/components/RouteGuard";
 import {
   CULTURAL_DISCOVERY_SECTIONS,
@@ -44,7 +45,7 @@ function DiscoverContent() {
   return (
     <div className="min-h-screen bg-ink">
       <AppHeader />
-      <main id="main-content" tabIndex={-1} className="container-editorial pt-24 pb-16 md:pt-28">
+      <AppPageMain>
         <p className="text-[10px] uppercase tracking-[0.35em] text-muted">Cultural discovery</p>
         <h1 className="mt-4 font-display text-4xl text-ivory md:text-5xl">
           Fashion communities & creative influences
@@ -110,7 +111,7 @@ function DiscoverContent() {
             Browse Showroom / Private Shopping locations →
           </Link>
         </section>
-      </main>
+      </AppPageMain>
     </div>
   );
 }

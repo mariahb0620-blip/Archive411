@@ -1,203 +1,131 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { useMemo } from "react";
 import AppHeader from "@/app/components/AppHeader";
+import AppPageMain from "@/app/components/AppPageMain";
 import DiscoveryCard from "@/app/components/DiscoveryCard";
+import EditorialButton from "@/app/components/EditorialButton";
+import MobileQuickActions from "@/app/components/MobileQuickActions";
+import MobileSectionHeader from "@/app/components/MobileSectionHeader";
 import RouteGuard from "@/app/components/RouteGuard";
-import { DISCOVERY_MODES, HOMEPAGE_COLLECTIONS } from "@/app/data/mockCatalog";
-import { CULTURAL_DISCOVERY_SECTIONS } from "@/app/data/styleCommunities";
-import { getFeaturedDesigners } from "@/app/services/lookbook.service";
+import AppImage from "@/app/components/AppImage";
 import { useApp } from "@/app/context/AppContext";
+import { BETA_DESIGNERS } from "@/app/data/betaCatalog";
+import { DISCOVERY_MODES } from "@/app/data/mockCatalog";
+
+function uniqueFeaturedByCity() {
+  const seen = new Set<string>();
+  return BETA_DESIGNERS.filter((d) => d.featured)
+    .filter((d) => {
+      const key = d.city.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 6);
+}
 
 function HomeContent() {
-  const { user } = useApp();
-  const featured = getFeaturedDesigners();
+  const { user, lookbooks } = useApp();
+  const featured = useMemo(() => uniqueFeaturedByCity(), []);
+  const recentLookbook = lookbooks[0];
+
+  const displayName = user?.name?.split(" ")[0] ?? "there";
 
   return (
     <div className="min-h-screen bg-ink">
       <AppHeader />
-
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className="container-editorial pt-24 pb-16 md:pt-28 md:pb-24"
-      >
-        <header className="mb-12 border-b border-smoke/30 pb-10">
-          <p className="text-[10px] uppercase tracking-[0.35em] text-muted">
-            Welcome{user?.name ? `, ${user.name}` : ""}
-          </p>
-          <h1 className="mt-4 font-display text-4xl text-ivory md:text-5xl">
-            What are you looking for today?
+      <AppPageMain className="space-y-8 md:space-y-16">
+        <section>
+          <p className="text-[10px] uppercase tracking-[0.35em] text-accent">Archive411</p>
+          <h1 className="mt-2 font-display text-3xl leading-tight text-ivory md:text-5xl">
+            Hello, {displayName}
           </h1>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted">
-            Explore fashion through complete looks, independent designers and
-            personalized search — not product grids.
+          <p className="mt-2 max-w-xl text-sm text-muted md:text-base">
+            Explore independent fashion worldwide, or build a look in minutes.
           </p>
-        </header>
-
-        <section aria-label="Discovery modes" className="grid gap-5 md:grid-cols-2">
-          {DISCOVERY_MODES.map((mode, index) => (
-            <DiscoveryCard
-              key={mode.id}
-              href={mode.href}
-              title={mode.title}
-              description={mode.description}
-              index={index}
-            />
-          ))}
         </section>
 
-        <section className="mt-20 border-t border-smoke/30 pt-16">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <MobileQuickActions />
+
+        {recentLookbook && (
+          <section className="mobile-card flex items-center justify-between gap-4 p-4 md:hidden">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.35em] text-accent">
-                High-Low Registry
-              </p>
-              <h2 className="mt-3 font-display text-3xl text-ivory md:text-4xl">
-                Twelve editorial lookbook profiles
-              </h2>
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
-                Macy&apos;s foundations paired with luxury accents — historical
-                influence, runway references, and curation narratives for every
-                look.
-              </p>
+              <p className="text-[10px] uppercase tracking-[0.2em] text-muted">Continue</p>
+              <p className="mt-1 line-clamp-1 text-sm text-ivory">{recentLookbook.title}</p>
             </div>
             <Link
-              href="/results"
-              className="text-[10px] uppercase tracking-[0.25em] text-muted transition-colors hover:text-ivory"
+              href={`/lookbooks/${recentLookbook.id}`}
+              className="shrink-0 rounded-full bg-accent/10 px-4 py-2 text-xs uppercase tracking-wider text-accent"
             >
-              Open registry →
+              Open
             </Link>
+          </section>
+        )}
+
+        <section>
+          <MobileSectionHeader eyebrow="Explore" title="How do you want to discover?" />
+          <div className="space-y-3 md:grid md:grid-cols-2 md:gap-6 md:space-y-0 lg:grid-cols-4">
+            {DISCOVERY_MODES.map((mode, index) => (
+              <DiscoveryCard
+                key={mode.id}
+                href={mode.href}
+                title={mode.title}
+                description={mode.description}
+                index={index}
+              />
+            ))}
           </div>
         </section>
 
-        <section className="mt-20 border-t border-smoke/30 pt-16">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.35em] text-accent">
-                The Independent Edit
-              </p>
-              <h2 className="mt-3 font-display text-3xl text-ivory md:text-4xl">
-                Discover independent and emerging designers shaping fashion across the world.
-              </h2>
-            </div>
-            <Link
-              href="/independent"
-              className="text-[10px] uppercase tracking-[0.25em] text-muted transition-colors hover:text-ivory"
-            >
-              View all →
-            </Link>
-          </div>
-
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
+        <section>
+          <MobileSectionHeader
+            eyebrow="Independent"
+            title="Featured designers"
+            href="/designers"
+          />
+          <div className="mobile-horizontal-scroll md:grid md:grid-cols-2 md:gap-6 md:overflow-visible lg:grid-cols-3">
             {featured.map((designer) => (
               <Link
                 key={designer.id}
                 href={`/designers/${designer.slug}`}
-                className="group border border-smoke/50 bg-charcoal transition-colors hover:border-accent/50"
+                className="mobile-card group w-[68vw] shrink-0 snap-start overflow-hidden active:scale-[0.98] md:w-auto"
               >
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <Image
+                <div className="relative aspect-[4/5] overflow-hidden bg-[#141414]">
+                  <AppImage
                     src={designer.coverImageUrl}
                     alt={designer.labelName}
                     fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                    sizes="(max-width:768px) 100vw, 50vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 768px) 68vw, 33vw"
                   />
                 </div>
-                <div className="p-6">
-                  <p className="text-[10px] uppercase tracking-[0.25em] text-muted">
+                <div className="p-4">
+                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted">
                     {designer.city}, {designer.country}
                   </p>
-                  <h3 className="mt-2 font-display text-2xl text-ivory">
-                    {designer.labelName}
-                  </h3>
-                  <p className="mt-3 line-clamp-2 text-sm text-muted">
-                    {designer.biography}
-                  </p>
-                  <span className="mt-4 inline-block text-[10px] uppercase tracking-[0.2em] text-accent">
-                    View designer →
-                  </span>
+                  <p className="mt-1 font-display text-lg text-ivory">{designer.labelName}</p>
+                  <p className="mt-1 line-clamp-2 text-xs text-muted">{designer.biography}</p>
                 </div>
               </Link>
             ))}
           </div>
         </section>
 
-        <section className="mt-16 border-t border-smoke/30 pt-12">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.35em] text-muted">
-                Cultural discovery
-              </p>
-              <h2 className="mt-3 font-display text-3xl text-ivory">
-                Fashion communities & creative influences
-              </h2>
-              <p className="mt-4 max-w-xl text-sm text-muted">
-                Explore style directions from cities and communities worldwide — never
-                assigned based on how you look.
-              </p>
-            </div>
-            <Link
-              href="/discover"
-              className="text-[10px] uppercase tracking-[0.25em] text-muted transition-colors hover:text-ivory"
-            >
-              View all →
-            </Link>
-          </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {CULTURAL_DISCOVERY_SECTIONS.slice(0, 6).map((section) => (
-              <Link
-                key={section.id}
-                href={section.href}
-                className="border border-smoke/50 p-5 transition-colors hover:border-accent/50"
-              >
-                <h3 className="font-display text-lg text-ivory">{section.title}</h3>
-                <p className="mt-2 line-clamp-2 text-xs text-muted">{section.description}</p>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-16 border-t border-smoke/30 pt-12">
-          <Link
-            href="/showrooms"
-            className="group block border border-smoke/50 bg-charcoal p-8 transition-colors hover:border-accent/50"
-          >
-            <p className="text-[10px] uppercase tracking-[0.35em] text-accent">
-              Showroom / Private Shopping
-            </p>
-            <h2 className="mt-3 font-display text-2xl text-ivory">
-              Appointment-based showrooms & styling studios
-            </h2>
-            <p className="mt-3 max-w-xl text-sm text-muted">
-              Build a fitting list, request try-ons, and book appointments — not off-the-rack
-              shopping.
-            </p>
-            <span className="mt-4 inline-block text-[10px] uppercase tracking-[0.2em] text-accent group-hover:text-ivory">
-              Browse showrooms →
-            </span>
-          </Link>
-        </section>
-
-        <section className="mt-16 border-t border-smoke/30 pt-12">
-          <p className="text-[10px] uppercase tracking-[0.35em] text-muted">
-            Global edits
+        <section className="hidden border-t border-smoke/30 pt-12 md:block">
+          <MobileSectionHeader eyebrow="Account" title="Your style registry" />
+          <p className="mb-6 max-w-2xl text-muted">
+            Save looks, track designers, and refine your preferences over time.
           </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {HOMEPAGE_COLLECTIONS.map((col) => (
-              <Link
-                key={col.id}
-                href={col.href}
-                className="border border-smoke/50 px-4 py-2 text-xs text-ivory transition-colors hover:border-accent hover:text-accent"
-              >
-                {col.title}
-              </Link>
-            ))}
+          <div className="flex flex-wrap gap-4">
+            <EditorialButton href="/profile">View profile</EditorialButton>
+            <EditorialButton href="/build" variant="ghost">
+              Build a look
+            </EditorialButton>
           </div>
         </section>
-      </main>
+      </AppPageMain>
     </div>
   );
 }

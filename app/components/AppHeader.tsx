@@ -32,14 +32,10 @@ export default function AppHeader() {
           archive<span className="text-accent">.411</span>
         </Link>
 
-        {/* Mobile: quick profile access */}
-        <Link
-          href="/profile"
-          className="touch-target text-[10px] uppercase tracking-[0.2em] text-muted transition-colors hover:text-ivory lg:hidden"
-          aria-current={pathname === "/profile" ? "page" : undefined}
-        >
-          Profile
-        </Link>
+        {/* Mobile: compact — navigation lives in bottom tab bar */}
+        <p className="text-[10px] uppercase tracking-[0.2em] text-muted md:hidden">
+          Beta
+        </p>
 
         <nav
           className="hidden items-center gap-5 lg:flex"

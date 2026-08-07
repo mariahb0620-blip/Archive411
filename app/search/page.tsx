@@ -3,15 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import AppHeader from "@/app/components/AppHeader";
+import AppPageMain from "@/app/components/AppPageMain";
 import EditorialButton from "@/app/components/EditorialButton";
 import RouteGuard from "@/app/components/RouteGuard";
+import StickyActionBar from "@/app/components/StickyActionBar";
 import { AESTHETIC_TAGS, DEPARTMENT_OPTIONS } from "@/app/data/aestheticTags";
 import { FASHION_CITIES } from "@/app/data/fashionCities";
 import { DEFAULT_PRICE_RANGE, PRICE_TIER_LABELS } from "@/app/data/mockCatalog";
-import {
-  generateLookbookFromSearch,
-  storeLookbookSession,
-} from "@/app/services/lookbook.service";
+import { fetchSearchRecommendation } from "@/app/services/archive.api";
+import { storeLookbookSession } from "@/app/services/lookbook.service";
 import type { DepartmentFilter, PriceRangeSelection } from "@/app/types/domain";
 
 const OCCASIONS = ["Work", "Date night", "Travel", "Event", "Everyday", "Nightlife", "Vacation"];
@@ -27,36 +27,51 @@ function SearchContent() {
   const [includeVintage, setIncludeVintage] = useState(true);
   const [priceRange, setPriceRange] = useState<PriceRangeSelection>(DEFAULT_PRICE_RANGE);
 
-  const search = () => {
-    const { lookbook, looks } = generateLookbookFromSearch({
-      query,
-      aesthetics: aesthetic ? [aesthetic] : undefined,
-      occasion,
-      city,
-      department,
-      priceRange,
-      independentOnly,
-      includeVintage,
-    });
-    storeLookbookSession(lookbook, looks, "search");
-    router.push(`/lookbooks/${lookbook.id}`);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const search = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await fetchSearchRecommendation({
+        query,
+        aesthetics: aesthetic ? [aesthetic] : undefined,
+        occasion,
+        city,
+        department,
+        priceRange,
+        independentOnly,
+        includeVintage,
+      });
+      if (result.empty || !result.looks.length) {
+        setError(result.message ?? "No matches found. Try broadening your filters.");
+        return;
+      }
+      storeLookbookSession(result.lookbook, result.looks, "search", undefined, result.products);
+      router.push(`/lookbooks/${result.lookbook.id}`);
+    } catch {
+      setError("Search failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-ink">
       <AppHeader />
-      <main id="main-content" tabIndex={-1} className="container-editorial pt-24 pb-16 md:pt-28">
-        <p className="text-[10px] uppercase tracking-[0.35em] text-muted">Search Your Way</p>
-        <h1 className="mt-4 font-display text-4xl text-ivory md:text-5xl">
-          Search the global archive
-        </h1>
-        <p className="mt-4 max-w-2xl text-sm text-muted">
-          Search across designers, concept stores, vintage sellers and retailers —
-          not one department or one country. Presentation guides results without
-          restricting retailer categories.
-        </p>
+      <AppPageMain stickyFooter className="max-w-2xl space-y-8">
+        <header>
+          <p className="text-[10px] uppercase tracking-[0.35em] text-accent">Search</p>
+          <h1 className="mt-2 font-display text-3xl text-ivory md:text-4xl">
+            Search the global archive
+          </h1>
+          <p className="mt-3 text-sm text-muted">
+            Search across designers, concept stores, vintage sellers and retailers worldwide.
+          </p>
+        </header>
 
-        <div className="mt-10 space-y-8">
+        <div className="space-y-6">
           <label className="block">
             <span className="text-[10px] uppercase tracking-[0.2em] text-muted">
               Search request
@@ -65,12 +80,12 @@ function SearchContent() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               rows={3}
-              placeholder="Create a chic and sexy feminine-androgynous look for a humid night in Ho Chi Minh City. Include heels and a handbag. US 8–10, shoe size US 9, budget $300."
-              className="mt-2 w-full border border-smoke/60 bg-charcoal px-4 py-3 text-ivory"
+              placeholder="Describe the look, occasion, city, sizes, and budget…"
+              className="mobile-input mt-2 resize-none"
             />
           </label>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             <FilterSelect
               label="Aesthetic"
               value={aesthetic}
@@ -107,30 +122,48 @@ function SearchContent() {
             />
           </div>
 
-          <div className="space-y-3">
-            <label className="flex items-center gap-3 text-sm text-muted">
+          <div className="mobile-card space-y-1 p-1">
+            <label className="mobile-settings-row cursor-pointer">
+              <span className="text-muted">Prioritize independent designers</span>
               <input
                 type="checkbox"
                 checked={independentOnly}
                 onChange={(e) => setIndependentOnly(e.target.checked)}
-                className="h-4 w-4 accent-accent"
+                className="h-5 w-5 accent-accent"
               />
-              Prioritize independent and emerging designers
             </label>
-            <label className="flex items-center gap-3 text-sm text-muted">
+            <label className="mobile-settings-row cursor-pointer">
+              <span className="text-muted">Include vintage & archive</span>
               <input
                 type="checkbox"
                 checked={includeVintage}
                 onChange={(e) => setIncludeVintage(e.target.checked)}
-                className="h-4 w-4 accent-accent"
+                className="h-5 w-5 accent-accent"
               />
-              Include vintage and archive sources
             </label>
           </div>
 
-          <EditorialButton onClick={search}>Search looks</EditorialButton>
+          {error && (
+            <p className="text-sm text-accent" role="alert">
+              {error}
+            </p>
+          )}
+
+          <div className="hidden md:block">
+            <EditorialButton onClick={search} disabled={loading}>
+              {loading ? "Searching…" : "Search looks"}
+            </EditorialButton>
+          </div>
         </div>
-      </main>
+      </AppPageMain>
+
+      <div className="md:hidden">
+        <StickyActionBar>
+          <EditorialButton onClick={search} disabled={loading} className="w-full">
+            {loading ? "Searching…" : "Search looks"}
+          </EditorialButton>
+        </StickyActionBar>
+      </div>
     </div>
   );
 }
@@ -154,7 +187,7 @@ function FilterSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 w-full border border-smoke/60 bg-charcoal px-4 py-3 text-ivory"
+        className="mobile-input mt-2 appearance-none"
       >
         <option value="">Any</option>
         {options.map((opt) => (

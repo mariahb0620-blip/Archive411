@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import AppImage from "@/app/components/AppImage";
 import EditorialButton from "@/app/components/EditorialButton";
 
 interface EmptyStateProps {
@@ -27,7 +27,7 @@ export default function EmptyState({
     <div className="mx-auto max-w-lg text-center">
       {imageUrl && (
         <div className="relative mx-auto mb-8 aspect-[4/3] max-w-sm overflow-hidden border border-smoke/40">
-          <Image src={imageUrl} alt="" fill className="object-cover" sizes="400px" />
+          <AppImage src={imageUrl} alt="" fill className="object-cover" sizes="400px" />
         </div>
       )}
       <p className="text-[10px] uppercase tracking-[0.35em] text-muted">

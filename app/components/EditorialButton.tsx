@@ -24,7 +24,7 @@ export default function EditorialButton({
   disabled = false,
 }: EditorialButtonProps) {
   const baseStyles =
-    "inline-flex min-h-11 items-center justify-center px-8 py-3 text-xs uppercase tracking-[0.25em] transition-colors md:text-sm";
+    "inline-flex min-h-11 items-center justify-center rounded-xl px-8 py-3 text-xs uppercase tracking-[0.25em] transition-colors md:rounded-none md:text-sm";
 
   const variantStyles = {
     primary: "bg-accent text-ink hover:bg-ivory",

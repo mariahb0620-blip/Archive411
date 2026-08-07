@@ -12,8 +12,6 @@ import {
 import type {
   ArchiveCollection,
   AuthProvider,
-  BuildLookAnswers,
-  Look,
   Lookbook,
   SavedItem,
   SavedLookbookSession,
@@ -21,6 +19,16 @@ import type {
 } from "@/app/types/domain";
 import { STORAGE_KEYS } from "@/app/types/domain";
 import { persistLookbookToArchive } from "@/app/services/lookbook.service";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import {
+  fetchUserLookbooks,
+  saveLookbookToApi,
+} from "@/app/services/archive.api";
+import {
+  getOrCreateGuestId,
+  guestArchiveKey,
+  migrateGuestLookbooksToAccount,
+} from "@/lib/guest/storage";
 
 interface SessionState {
   user: User | null;
@@ -33,63 +41,28 @@ interface SessionState {
 interface AppContextValue extends SessionState {
   isLoading: boolean;
   isAuthenticated: boolean;
+  supabaseEnabled: boolean;
+  authError: string | null;
   completeIntro: () => void;
   signIn: (params: {
     email?: string;
+    password?: string;
     name?: string;
     provider: AuthProvider;
-  }) => void;
-  signOut: () => void;
+    mode?: "sign-up" | "sign-in";
+  }) => Promise<boolean>;
+  signOut: () => Promise<void>;
   saveLookbook: (
     lookbook: Lookbook,
     session?: Pick<SavedLookbookSession, "looks" | "method" | "buildPreferences">
-  ) => void;
+  ) => Promise<void>;
+  refreshArchive: () => Promise<void>;
   createCollection: (name: string, description?: string) => ArchiveCollection;
   addToCollection: (
     itemId: string,
     type: SavedItem["type"],
     collectionId: string
   ) => void;
-}
-
-const defaultUser = (
-  provider: AuthProvider,
-  email?: string,
-  name?: string
-): User => {
-  const normalizedEmail = email?.trim().toLowerCase();
-  const id =
-    provider === "guest"
-      ? `guest-${Date.now()}`
-      : normalizedEmail
-        ? `user-${normalizedEmail}`
-        : `user-${Date.now()}`;
-
-  return {
-    id,
-    email: normalizedEmail,
-    name: name ?? (provider === "guest" ? "Guest" : "Member"),
-    preferredCurrency: "USD",
-    preferences: {
-      sizes: [],
-      aesthetics: [],
-      silhouettePreferences: [],
-      colorPreferences: [],
-      independentDesignersOnly: false,
-    },
-    onboardingStatus: "complete",
-    authProvider: provider,
-    isGuest: provider === "guest",
-    createdAt: new Date().toISOString(),
-  };
-};
-
-function archiveStorageKey(userId: string) {
-  return `${STORAGE_KEYS.archive}-${userId}`;
-}
-
-function collectionsStorageKey(userId: string) {
-  return `${STORAGE_KEYS.collections}-${userId}`;
 }
 
 function readStorage<T>(key: string, fallback: T): T {
@@ -107,6 +80,51 @@ function writeStorage<T>(key: string, value: T): void {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+function mapSupabaseUser(
+  authUser: { id: string; email?: string; user_metadata?: Record<string, unknown> },
+  provider: AuthProvider
+): User {
+  return {
+    id: authUser.id,
+    email: authUser.email,
+    name:
+      (authUser.user_metadata?.name as string) ??
+      authUser.email?.split("@")[0] ??
+      "Member",
+    preferredCurrency: "USD",
+    preferences: {
+      sizes: [],
+      aesthetics: [],
+      silhouettePreferences: [],
+      colorPreferences: [],
+      independentDesignersOnly: false,
+    },
+    onboardingStatus: "complete",
+    authProvider: provider,
+    isGuest: false,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function guestUser(guestId: string, name?: string): User {
+  return {
+    id: guestId,
+    name: name ?? "Guest",
+    preferredCurrency: "USD",
+    preferences: {
+      sizes: [],
+      aesthetics: [],
+      silhouettePreferences: [],
+      colorPreferences: [],
+      independentDesignersOnly: false,
+    },
+    onboardingStatus: "complete",
+    authProvider: "guest",
+    isGuest: true,
+    createdAt: new Date().toISOString(),
+  };
+}
+
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -116,57 +134,191 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [lookbooks, setLookbooks] = useState<Lookbook[]>([]);
   const [collections, setCollections] = useState<ArchiveCollection[]>([]);
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const supabaseEnabled = isSupabaseConfigured();
+
+  const loadGuestArchive = useCallback((guestId: string) => {
+    setLookbooks(readStorage(guestArchiveKey(guestId), []));
+    setCollections(readStorage(`${STORAGE_KEYS.collections}-${guestId}`, []));
+  }, []);
+
+  const refreshArchive = useCallback(async () => {
+    if (!user || user.isGuest || !supabaseEnabled) return;
+    try {
+      const lbs = await fetchUserLookbooks();
+      setLookbooks(lbs);
+    } catch {
+      // keep local state
+    }
+  }, [user, supabaseEnabled]);
 
   useEffect(() => {
-    setIntroComplete(readStorage(STORAGE_KEYS.onboarding, false));
-    const sessionUser = readStorage<User | null>(STORAGE_KEYS.session, null);
-    setUser(sessionUser);
-    if (sessionUser) {
-      setLookbooks(readStorage(archiveStorageKey(sessionUser.id), []));
-      setCollections(readStorage(collectionsStorageKey(sessionUser.id), []));
+    async function init() {
+      setIntroComplete(readStorage(STORAGE_KEYS.onboarding, false));
+
+      if (supabaseEnabled) {
+        const supabase = createClient();
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          const mapped = mapSupabaseUser(authUser, "email");
+          setUser(mapped);
+          try {
+            const lbs = await fetchUserLookbooks();
+            setLookbooks(lbs);
+          } catch {
+            setLookbooks([]);
+          }
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      const legacy = readStorage<User | null>(STORAGE_KEYS.session, null);
+      if (legacy?.isGuest) {
+        setUser(legacy);
+        loadGuestArchive(legacy.id);
+      } else if (legacy && !supabaseEnabled) {
+        setUser(legacy);
+        setLookbooks(readStorage(`${STORAGE_KEYS.archive}-${legacy.id}`, []));
+      }
+
+      setSavedItems(readStorage(STORAGE_KEYS.savedItems, []));
+      setIsLoading(false);
     }
-    setSavedItems(readStorage(STORAGE_KEYS.savedItems, []));
-    setIsLoading(false);
-  }, []);
+    init();
+  }, [supabaseEnabled, loadGuestArchive]);
 
   useEffect(() => {
     if (!isLoading) writeStorage(STORAGE_KEYS.onboarding, introComplete);
   }, [introComplete, isLoading]);
 
   useEffect(() => {
-    if (!isLoading) writeStorage(STORAGE_KEYS.session, user);
-  }, [user, isLoading]);
-
-  useEffect(() => {
-    if (!isLoading && user) {
-      writeStorage(archiveStorageKey(user.id), lookbooks);
-      writeStorage(collectionsStorageKey(user.id), collections);
+    if (!isLoading && user?.isGuest) {
+      writeStorage(STORAGE_KEYS.session, user);
+      writeStorage(guestArchiveKey(user.id), lookbooks);
     }
-  }, [lookbooks, collections, user, isLoading]);
-
-  useEffect(() => {
-    if (!isLoading) writeStorage(STORAGE_KEYS.savedItems, savedItems);
-  }, [savedItems, isLoading]);
+  }, [lookbooks, user, isLoading]);
 
   const completeIntro = useCallback(() => setIntroComplete(true), []);
 
   const signIn = useCallback(
-    ({ email, name, provider }: { email?: string; name?: string; provider: AuthProvider }) => {
-      const nextUser = defaultUser(provider, email, name);
-      setUser(nextUser);
-      setLookbooks(readStorage(archiveStorageKey(nextUser.id), []));
-      setCollections(readStorage(collectionsStorageKey(nextUser.id), []));
+    async ({
+      email,
+      password,
+      name,
+      provider,
+      mode = "sign-up",
+    }: {
+      email?: string;
+      password?: string;
+      name?: string;
+      provider: AuthProvider;
+      mode?: "sign-up" | "sign-in";
+    }) => {
+      setAuthError(null);
+
+      if (provider === "guest") {
+        const guestId = getOrCreateGuestId();
+        const nextUser = guestUser(guestId, name);
+        setUser(nextUser);
+        loadGuestArchive(guestId);
+        writeStorage(STORAGE_KEYS.session, nextUser);
+        return true;
+      }
+
+      if (provider === "google") {
+        if (!supabaseEnabled) {
+          setAuthError("Google sign-in requires Supabase configuration.");
+          return false;
+        }
+        const supabase = createClient();
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+          },
+        });
+        if (error) {
+          setAuthError(error.message);
+          return false;
+        }
+        return true;
+      }
+
+      const normalizedEmail = email?.trim().toLowerCase();
+      if (!normalizedEmail || !password) {
+        setAuthError("Email and password are required.");
+        return false;
+      }
+
+      if (supabaseEnabled) {
+        const supabase = createClient();
+        let authUser;
+
+        if (mode === "sign-up") {
+          const { data, error } = await supabase.auth.signUp({
+            email: normalizedEmail,
+            password,
+            options: { data: { name: name ?? normalizedEmail.split("@")[0] } },
+          });
+          if (error) {
+            setAuthError(error.message);
+            return false;
+          }
+          authUser = data.user;
+          if (!authUser) {
+            setAuthError("Check your email to confirm your account, then sign in.");
+            return false;
+          }
+        } else {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: normalizedEmail,
+            password,
+          });
+          if (error) {
+            setAuthError(error.message);
+            return false;
+          }
+          authUser = data.user;
+        }
+
+        if (!authUser) return false;
+
+        await migrateGuestLookbooksToAccount();
+        const mapped = mapSupabaseUser(authUser, "email");
+        setUser(mapped);
+        localStorage.removeItem(STORAGE_KEYS.session);
+        const lbs = await fetchUserLookbooks();
+        setLookbooks(lbs);
+        return true;
+      }
+
+      // Offline fallback when Supabase is not configured
+      const fallback = guestUser(`user-${normalizedEmail}`, name ?? "Member");
+      fallback.email = normalizedEmail;
+      fallback.authProvider = "email";
+      fallback.isGuest = false;
+      fallback.id = `user-${normalizedEmail}`;
+      setUser(fallback);
+      setLookbooks(readStorage(`${STORAGE_KEYS.archive}-${fallback.id}`, []));
+      writeStorage(STORAGE_KEYS.session, fallback);
+      return true;
     },
-    []
+    [supabaseEnabled, loadGuestArchive]
   );
 
-  const signOut = useCallback(() => {
+  const signOut = useCallback(async () => {
+    if (supabaseEnabled) {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    }
     setUser(null);
+    setLookbooks([]);
     localStorage.removeItem(STORAGE_KEYS.session);
-  }, []);
+  }, [supabaseEnabled]);
 
   const saveLookbook = useCallback(
-    (
+    async (
       lookbook: Lookbook,
       session?: Pick<SavedLookbookSession, "looks" | "method" | "buildPreferences">
     ) => {
@@ -177,12 +329,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         saved: true,
         buildPreferences: session?.buildPreferences ?? lookbook.buildPreferences,
       };
-      setLookbooks((prev) => {
-        const exists = prev.find((l) => l.id === saved.id);
-        return exists
-          ? prev.map((l) => (l.id === saved.id ? saved : l))
-          : [saved, ...prev];
-      });
+
       if (session?.looks) {
         persistLookbookToArchive({
           lookbook: saved,
@@ -191,6 +338,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
           buildPreferences: session.buildPreferences,
         });
       }
+
+      if (!user.isGuest && supabaseEnabled && session?.looks) {
+        try {
+          await saveLookbookToApi({
+            lookbook: saved,
+            looks: session.looks,
+            method: session.method,
+            buildPreferences: session.buildPreferences,
+          });
+        } catch (err) {
+          console.error("Save to API failed", err);
+        }
+      }
+
+      setLookbooks((prev) => {
+        const exists = prev.find((l) => l.id === saved.id);
+        return exists
+          ? prev.map((l) => (l.id === saved.id ? saved : l))
+          : [saved, ...prev];
+      });
+
+      if (user.isGuest) {
+        writeStorage(guestArchiveKey(user.id), [
+          saved,
+          ...readStorage<Lookbook[]>(guestArchiveKey(user.id), []).filter(
+            (l) => l.id !== saved.id
+          ),
+        ]);
+      }
+
       setSavedItems((prev) => [
         {
           id: `saved-${saved.id}`,
@@ -203,7 +380,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ...prev.filter((p) => p.referenceId !== saved.id),
       ]);
     },
-    [user]
+    [user, supabaseEnabled]
   );
 
   const createCollection = useCallback(
@@ -265,10 +442,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       savedItems,
       isLoading,
       isAuthenticated: Boolean(user),
+      supabaseEnabled,
+      authError,
       completeIntro,
       signIn,
       signOut,
       saveLookbook,
+      refreshArchive,
       createCollection,
       addToCollection,
     }),
@@ -279,10 +459,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       collections,
       savedItems,
       isLoading,
+      supabaseEnabled,
+      authError,
       completeIntro,
       signIn,
       signOut,
       saveLookbook,
+      refreshArchive,
       createCollection,
       addToCollection,
     ]

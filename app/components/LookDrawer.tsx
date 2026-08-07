@@ -2,14 +2,15 @@
 
 import { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
+import AppImage from "@/app/components/AppImage";
 import {
   formatPrice,
   getRetailerLabel,
   openAffiliateLink,
 } from "@/app/utils/affiliate";
 import type { OutfitLook } from "@/app/types/styling";
-import { backdropVariants, drawerVariants } from "@/app/lib/motion";
+import { backdropVariants, bottomSheetVariants, drawerVariants } from "@/app/lib/motion";
+import { useIsMobile } from "@/app/lib/useMediaQuery";
 
 interface LookDrawerProps {
   look: OutfitLook | null;
@@ -18,6 +19,8 @@ interface LookDrawerProps {
 
 export default function LookDrawer({ look, onClose }: LookDrawerProps) {
   const drawerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+  const sheetVariants = isMobile ? bottomSheetVariants : drawerVariants;
 
   useEffect(() => {
     if (!look) return;
@@ -61,14 +64,19 @@ export default function LookDrawer({ look, onClose }: LookDrawerProps) {
             role="dialog"
             aria-modal="true"
             aria-label={`${look.title} look details`}
-            className="fixed right-0 top-0 z-[70] flex h-full w-full max-w-lg flex-col border-l border-smoke/40 bg-charcoal shadow-2xl"
-            variants={drawerVariants}
+            className="fixed inset-x-0 bottom-0 z-[80] flex max-h-[92vh] w-full flex-col rounded-t-2xl border-t border-smoke/40 bg-charcoal shadow-2xl md:inset-x-auto md:bottom-auto md:right-0 md:top-0 md:max-h-full md:max-w-lg md:rounded-none md:border-l md:border-t-0"
+            variants={sheetVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
           >
-            <div className="relative aspect-[4/3] shrink-0 overflow-hidden">
-              <Image
+            {isMobile && (
+              <div className="flex shrink-0 justify-center pt-3 pb-1" aria-hidden>
+                <span className="h-1 w-10 rounded-full bg-smoke/80" />
+              </div>
+            )}
+            <div className="relative aspect-[4/3] shrink-0 overflow-hidden md:aspect-[4/3]">
+              <AppImage
                 src={look.heroImageUrl}
                 alt={look.title}
                 fill
@@ -106,7 +114,7 @@ export default function LookDrawer({ look, onClose }: LookDrawerProps) {
                     className="flex gap-4 border-b border-smoke/30 pb-6"
                   >
                     <div className="relative h-20 w-16 shrink-0 overflow-hidden bg-smoke">
-                      <Image
+                      <AppImage
                         src={garment.imageUrl}
                         alt={garment.name}
                         fill

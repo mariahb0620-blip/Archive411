@@ -65,6 +65,16 @@ function buildImpactAffiliateUrl(destinationUrl: string): string {
   return `${IMPACT_TRACKING_BASE}?${params.toString()}`;
 }
 
+export async function GET() {
+  return NextResponse.json({
+    networks: {
+      rakuten: { retailers: ["Macy's"], env: ["RAKUTEN_AFFILIATE_ID", "RAKUTEN_MID", "RAKUTEN_TRACKING_BASE"] },
+      impact: { retailers: ["SSENSE", "Farfetch"], env: ["IMPACT_CAMPAIGN_ID", "IMPACT_MEDIA_PARTNER_ID", "IMPACT_TRACKING_BASE"] },
+    },
+    note: "Product feeds not connected — affiliate URL builder only. Curated retailer subsets planned for high-low styling.",
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as AffiliateRequestBody;

@@ -76,8 +76,40 @@
     padding-top: calc(3.75rem + env(safe-area-inset-top));
   }
 
+  .app-shell-header-offset {
+    padding-top: calc(3.75rem + env(safe-area-inset-top));
+  }
+
+  /* Native-style surfaces */
+  .mobile-card {
+    @apply rounded-2xl border border-smoke/50 bg-charcoal;
+  }
+
+  .mobile-input {
+    @apply w-full rounded-xl border border-smoke/60 bg-charcoal px-4 py-3.5 text-ivory placeholder:text-smoke;
+  }
+
+  .mobile-settings-group {
+    @apply overflow-hidden rounded-2xl border border-smoke/50 bg-charcoal;
+  }
+
+  .mobile-settings-row {
+    @apply flex min-h-[3.25rem] items-center justify-between border-b border-smoke/30 px-4 py-3 text-sm last:border-b-0;
+  }
+
+  .mobile-horizontal-scroll {
+    @apply -mx-4 flex gap-3 overflow-x-auto px-4 pb-1 snap-x snap-mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .mobile-horizontal-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
   @media (min-width: 768px) {
-    .mobile-page-top {
+    .mobile-page-top,
+    .app-shell-header-offset {
       padding-top: 7rem;
     }
   }
@@ -131,7 +163,7 @@
   }
 
   .pb-mobile-nav {
-    padding-bottom: calc(4.25rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
   }
 
   @media (min-width: 768px) {

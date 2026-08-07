@@ -4,20 +4,38 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import {
+  IconArchive,
+  IconCreate,
+  IconHome,
+  IconProfile,
+  IconSearch,
+} from "@/app/components/MobileNavIcons";
 
 const PRIMARY_TABS = [
-  { href: "/home", label: "Home", short: "Home" },
-  { href: "/search", label: "Search fashion", short: "Search" },
-  { href: "/create", label: "Create a look", short: "Create" },
-  { href: "/archive", label: "My Archive", short: "Archive" },
-  { href: "/profile", label: "Profile", short: "Profile" },
+  { href: "/home", label: "Home", short: "Home", Icon: IconHome },
+  { href: "/search", label: "Search", short: "Search", Icon: IconSearch },
+  { href: "/create", label: "Create", short: "Create", Icon: IconCreate },
+  { href: "/archive", label: "Archive", short: "Archive", Icon: IconArchive },
+  { href: "/profile", label: "Profile", short: "Profile", Icon: IconProfile },
 ] as const;
 
 const CREATE_OPTIONS = [
-  { href: "/build", label: "Build My Look" },
-  { href: "/generate", label: "Quick Generate" },
-  { href: "/surprise", label: "Surprise Me" },
+  { href: "/build", label: "Build My Look", desc: "Questionnaire → curated lookbook", available: true },
+  { href: "/generate", label: "Quick Generate", desc: "Coming soon — use Build My Look", available: false },
+  { href: "/surprise", label: "Surprise Me", desc: "Random style from verified catalog", available: true },
 ] as const;
+
+function tabActive(pathname: string, href: string, isCreateActive: boolean): boolean {
+  if (href === "/create") return isCreateActive;
+  if (href === "/archive") {
+    return pathname === "/archive" || pathname.startsWith("/lookbooks");
+  }
+  if (href === "/home") {
+    return pathname === "/home" || pathname === "/independent" || pathname === "/designers";
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export default function MobileNav() {
   const pathname = usePathname();
@@ -36,7 +54,7 @@ export default function MobileNav() {
             <motion.button
               type="button"
               aria-label="Close create menu"
-              className="fixed inset-0 z-[65] bg-ink/60 md:hidden"
+              className="fixed inset-0 z-[65] bg-ink/70 backdrop-blur-sm md:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -45,39 +63,54 @@ export default function MobileNav() {
             <motion.div
               role="menu"
               aria-label="Create options"
-              className="fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-[66] border border-smoke/60 bg-charcoal p-2 md:hidden"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 16 }}
+              className="fixed inset-x-3 z-[66] overflow-hidden rounded-2xl border border-smoke/60 bg-charcoal shadow-2xl md:hidden"
+              style={{ bottom: "calc(4.75rem + env(safe-area-inset-bottom))" }}
+              initial={{ opacity: 0, y: 24, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.98 }}
+              transition={{ type: "spring", damping: 28, stiffness: 320 }}
             >
-              {CREATE_OPTIONS.map((opt) => (
-                <Link
-                  key={opt.href}
-                  href={opt.href}
-                  role="menuitem"
-                  onClick={() => setCreateOpen(false)}
-                  className="touch-target block w-full border-b border-smoke/30 px-4 text-left text-sm text-ivory last:border-0 hover:text-accent"
-                >
-                  {opt.label}
-                </Link>
-              ))}
+              <p className="border-b border-smoke/30 px-4 py-3 text-[10px] uppercase tracking-[0.25em] text-muted">
+                Create a look
+              </p>
+              {CREATE_OPTIONS.map((opt) =>
+                opt.available ? (
+                  <Link
+                    key={opt.href}
+                    href={opt.href}
+                    role="menuitem"
+                    onClick={() => setCreateOpen(false)}
+                    className="flex min-h-[3.5rem] flex-col justify-center border-b border-smoke/20 px-4 py-3 last:border-0 active:bg-smoke/30"
+                  >
+                    <span className="text-sm font-medium text-ivory">{opt.label}</span>
+                    <span className="mt-0.5 text-xs text-muted">{opt.desc}</span>
+                  </Link>
+                ) : (
+                  <div
+                    key={opt.href}
+                    role="menuitem"
+                    aria-disabled="true"
+                    className="flex min-h-[3.5rem] flex-col justify-center border-b border-smoke/20 px-4 py-3 opacity-50"
+                  >
+                    <span className="text-sm font-medium text-ivory">{opt.label}</span>
+                    <span className="mt-0.5 text-xs text-muted">{opt.desc}</span>
+                  </div>
+                )
+              )}
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-[70] border-t border-smoke/50 bg-ink/95 backdrop-blur-md md:hidden"
+        className="fixed inset-x-0 bottom-0 z-[70] border-t border-smoke/50 bg-ink/95 backdrop-blur-xl md:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
         aria-label="Primary app navigation"
       >
-        <ul className="grid grid-cols-5">
+        <ul className="grid grid-cols-5 px-1 pt-1">
           {PRIMARY_TABS.map((tab) => {
-            const isActive =
-              tab.href === "/create"
-                ? isCreateActive
-                : pathname === tab.href ||
-                  (tab.href === "/archive" && pathname.startsWith("/archive"));
+            const isActive = tabActive(pathname, tab.href, isCreateActive);
+            const { Icon } = tab;
 
             if (tab.href === "/create") {
               return (
@@ -85,19 +118,23 @@ export default function MobileNav() {
                   <button
                     type="button"
                     onClick={() => setCreateOpen((v) => !v)}
-                    className={`touch-target flex min-h-[3.25rem] w-full flex-col items-center justify-center gap-1 px-1 transition-colors ${
-                      isActive ? "text-accent" : "text-muted hover:text-ivory"
+                    className={`relative flex min-h-[3.5rem] w-full flex-col items-center justify-center gap-0.5 rounded-xl px-1 transition-colors active:scale-95 ${
+                      isActive || createOpen ? "text-accent" : "text-muted"
                     }`}
                     aria-label={tab.label}
                     aria-expanded={createOpen}
                     aria-haspopup="menu"
                   >
-                    <span className="font-display text-lg leading-none" aria-hidden="true">
-                      +
+                    <span
+                      className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                        isActive || createOpen
+                          ? "border-accent/60 bg-accent/15"
+                          : "border-smoke/50 bg-charcoal"
+                      }`}
+                    >
+                      <Icon className="h-5 w-5" />
                     </span>
-                    <span className="text-[10px] uppercase tracking-[0.18em]">
-                      {tab.short}
-                    </span>
+                    <span className="text-[10px] font-medium tracking-wide">{tab.short}</span>
                   </button>
                 </li>
               );
@@ -107,18 +144,21 @@ export default function MobileNav() {
               <li key={tab.href}>
                 <Link
                   href={tab.href}
-                  className={`touch-target flex min-h-[3.25rem] flex-col items-center justify-center gap-1 px-1 transition-colors ${
-                    isActive ? "text-accent" : "text-muted hover:text-ivory"
+                  className={`relative flex min-h-[3.5rem] flex-col items-center justify-center gap-0.5 rounded-xl px-1 transition-colors active:scale-95 ${
+                    isActive ? "text-accent" : "text-muted"
                   }`}
                   aria-label={tab.label}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <span className="font-display text-lg leading-none" aria-hidden="true">
-                    {String(PRIMARY_TABS.indexOf(tab) + 1).padStart(2, "0")}
-                  </span>
-                  <span className="text-[10px] uppercase tracking-[0.18em]">
-                    {tab.short}
-                  </span>
+                  {isActive && (
+                    <motion.span
+                      layoutId="mobile-nav-indicator"
+                      className="absolute top-0 h-0.5 w-8 rounded-full bg-accent"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
+                  <Icon className="h-5 w-5" />
+                  <span className="text-[10px] font-medium tracking-wide">{tab.short}</span>
                 </Link>
               </li>
             );

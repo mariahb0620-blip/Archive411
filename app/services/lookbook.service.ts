@@ -12,10 +12,6 @@ import type {
 import { STORAGE_KEYS } from "@/app/types/domain";
 import {
   DEFAULT_PRICE_RANGE,
-  MOCK_DESIGNERS,
-  MOCK_DISCLAIMER,
-  MOCK_LOOKS,
-  MOCK_PRODUCTS,
 } from "@/app/data/mockCatalog";
 import {
   STYLE_DIRECTION_OPTIONS,
@@ -27,6 +23,10 @@ import {
   rankCatalogProducts,
   searchCatalog,
 } from "@/app/services/catalog.service";
+import {
+  getVerifiedProductsSync,
+  getVerifiedDesignersSync,
+} from "@/lib/catalog/verifiedPool";
 import { assembleVariedLookbook } from "@/app/services/lookAssembly.service";
 import { shuffleArray, rotateArray } from "@/app/utils/pickRandom";
 
@@ -147,25 +147,12 @@ function buildLooksFromProducts(
   matchExplanation: string,
   stylingNote?: string
 ): Look[] {
-  if (!candidates.length) {
-    return MOCK_LOOKS.map((look) => ({
-      ...look,
-      id: id("look"),
-      lookbookId,
-      matchExplanation,
-    }));
-  }
+  if (!candidates.length) return [];
 
   const varied = assembleVariedLookbook(candidates, lookbookId, matchExplanation, stylingNote);
   if (varied.length) return varied;
 
-  return MOCK_LOOKS.map((look) => ({
-    ...look,
-    id: id("look"),
-    lookbookId,
-    matchExplanation,
-    productIds: candidates.slice(0, 4).map((p) => p.id),
-  }));
+  return [];
 }
 
 function mergeCandidatePool(
@@ -212,14 +199,15 @@ export function generateLookbookFromBuild(
     department,
   } as const;
 
-  const assembled = assembleDiverseLook(searchFilters, answers);
-  const ranked = searchCatalog(searchFilters, presentations);
+  const pool = getVerifiedProductsSync();
+  const assembled = assembleDiverseLook(searchFilters, answers, pool);
+  const ranked = searchCatalog(searchFilters, presentations, pool);
   const candidates = rotateArray(shuffleArray(mergeCandidatePool(assembled, ranked)));
 
   const lookbook: Lookbook = {
     id: id("lb"),
     title: `${location} · ${blendTitle}`,
-    description: `${blendNote} ${MOCK_DISCLAIMER}`,
+    description: `${blendNote} Verified catalog — limited beta inventory.`,
     coverImageUrl: CATEGORY_PLACEHOLDER.default,
     generatedAt: new Date().toISOString(),
     occasion: answers.dressingFor,
@@ -242,7 +230,7 @@ export function generateLookbookFromBuild(
   );
 
   const allProductIds = looks.flatMap((l) => l.productIds ?? []);
-  lookbook.coverImageUrl = coverFromProducts(allProductIds, MOCK_PRODUCTS);
+  lookbook.coverImageUrl = coverFromProducts(allProductIds, pool);
 
   return { lookbook, looks };
 }
@@ -253,13 +241,14 @@ export function generateLookbookFromSearch(
   const parsed = filters.query ? parseSearchQuery(filters.query) : {};
   const merged: SearchFilters = { ...parsed, ...filters, query: filters.query };
 
-  const assembled = assembleDiverseLook(merged);
-  const candidates = searchCatalog(merged);
+  const pool = getVerifiedProductsSync();
+  const assembled = assembleDiverseLook(merged, undefined, pool);
+  const candidates = searchCatalog(merged, undefined, pool);
 
   const lookbook: Lookbook = {
     id: id("lb"),
     title: filters.query?.slice(0, 48) ?? "Search Results",
-    description: `${assembled.explanation} ${MOCK_DISCLAIMER}`,
+    description: assembled.explanation || "Search results from verified catalog.",
     coverImageUrl: CATEGORY_PLACEHOLDER.default,
     generatedAt: new Date().toISOString(),
     occasion: filters.occasion,
@@ -276,7 +265,7 @@ export function generateLookbookFromSearch(
   const looks = buildLooksFromProducts(candidates, lookbook.id, assembled.explanation);
   lookbook.coverImageUrl = coverFromProducts(
     looks.flatMap((l) => l.productIds ?? []),
-    MOCK_PRODUCTS
+    pool
   );
 
   return { lookbook, looks };
@@ -298,10 +287,22 @@ export function generateSurpriseLookbook(
   ];
   const picked = aesthetics[Math.floor(Math.random() * aesthetics.length)];
 
+  const pool = getVerifiedProductsSync();
+  const surpriseFilters = {
+    aesthetics: [picked.toLowerCase().replace(/\s+/g, "-"), "y2k", "nightlife"],
+    independentOnly: true,
+    priceRange: constraints.priceRange ?? DEFAULT_PRICE_RANGE,
+    climate: constraints.climate,
+  };
+  const assembled = assembleDiverseLook(surpriseFilters, undefined, pool);
+  const candidates = searchCatalog(surpriseFilters, undefined, pool);
+
+  const aestheticExplanation = `${picked} may appeal to you because it balances ${constraints.adventurousness && constraints.adventurousness > 60 ? "experimental proportion" : "wearable structure"} with your selected occasion and climate.`;
+
   const lookbook: Lookbook = {
     id: id("lb"),
     title: `Surprise: ${picked}`,
-    description: `Archive411 selected ${picked} based on your constraints. ${MOCK_DISCLAIMER}`,
+    description: `${aestheticExplanation} Verified catalog — limited beta inventory.`,
     coverImageUrl: CATEGORY_PLACEHOLDER.default,
     generatedAt: new Date().toISOString(),
     occasion: constraints.occasion,
@@ -314,17 +315,6 @@ export function generateSurpriseLookbook(
     collectionIds: [],
   };
 
-  const surpriseFilters = {
-    aesthetics: [picked.toLowerCase().replace(/\s+/g, "-"), "y2k", "nightlife"],
-    independentOnly: true,
-    priceRange: constraints.priceRange ?? DEFAULT_PRICE_RANGE,
-    climate: constraints.climate,
-  };
-  const assembled = assembleDiverseLook(surpriseFilters);
-  const candidates = searchCatalog(surpriseFilters);
-
-  const aestheticExplanation = `${picked} may appeal to you because it balances ${constraints.adventurousness && constraints.adventurousness > 60 ? "experimental proportion" : "wearable structure"} with your selected occasion and climate.`;
-
   const looks = buildLooksFromProducts(
     candidates,
     lookbook.id,
@@ -332,7 +322,7 @@ export function generateSurpriseLookbook(
   );
   lookbook.coverImageUrl = coverFromProducts(
     looks.flatMap((l) => l.productIds ?? []),
-    MOCK_PRODUCTS
+    pool
   );
 
   return {
@@ -345,14 +335,15 @@ export function generateSurpriseLookbook(
 export function generateIndependentLookbook(
   designerIds?: string[]
 ): { lookbook: Lookbook; looks: Look[] } {
-  const designers = MOCK_DESIGNERS.filter(
+  const pool = getVerifiedProductsSync();
+  const designers = getVerifiedDesignersSync().filter(
     (d) => !designerIds?.length || designerIds.includes(d.id)
   );
 
   const lookbook: Lookbook = {
     id: id("lb"),
     title: "The Independent Edit",
-    description: `Featuring ${designers.map((d) => d.labelName).join(", ")}. ${MOCK_DISCLAIMER}`,
+    description: `Featuring ${designers.map((d) => d.labelName).join(", ")}. Verified catalog.`,
     coverImageUrl: normalizeCoverImageUrl(designers[0]?.coverImageUrl),
     generatedAt: new Date().toISOString(),
     aestheticTags: ["independent", "emerging"],
@@ -368,15 +359,15 @@ export function generateIndependentLookbook(
     independentOnly: true,
     aesthetics: ["contemporary", "independent"],
   };
-  const assembled = assembleDiverseLook(independentFilters);
-  const candidates = searchCatalog(independentFilters).filter(
+  const assembled = assembleDiverseLook(independentFilters, undefined, pool);
+  const candidates = searchCatalog(independentFilters, undefined, pool).filter(
     (p) => !p.designerId || rosterIds.includes(p.designerId)
   );
 
   return {
     lookbook,
     looks: buildLooksFromProducts(
-      candidates.length >= 4 ? candidates : searchCatalog(independentFilters),
+      candidates.length ? candidates : searchCatalog(independentFilters, undefined, pool),
       lookbook.id,
       `Independent edit featuring ${designers.map((d) => d.labelName).join(", ")}. ${assembled.explanation}`
     ),
@@ -384,22 +375,23 @@ export function generateIndependentLookbook(
 }
 
 export function getDesignerBySlug(slug: string) {
-  return MOCK_DESIGNERS.find((d) => d.slug === slug) ?? null;
+  return getVerifiedDesignersSync().find((d) => d.slug === slug) ?? null;
 }
 
 export function getDesignerProducts(designerId: string) {
-  return MOCK_PRODUCTS.filter((p) => p.designerId === designerId);
+  return getVerifiedProductsSync().filter((p) => p.designerId === designerId);
 }
 
 export function getFeaturedDesigners() {
-  return MOCK_DESIGNERS.filter((d) => d.featured);
+  return getVerifiedDesignersSync().filter((d) => d.featured);
 }
 
 export function storeLookbookSession(
   lookbook: Lookbook,
   looks: Look[],
   method: GenerationMethod,
-  buildPreferences?: BuildLookAnswers
+  buildPreferences?: BuildLookAnswers,
+  products?: import("@/app/types/domain").Product[]
 ) {
   if (typeof window === "undefined") return;
   sessionStorage.setItem(
@@ -411,6 +403,7 @@ export function storeLookbookSession(
       looks,
       method,
       buildPreferences,
+      products,
     })
   );
 }
@@ -420,6 +413,7 @@ export function readLookbookSession(): {
   looks: Look[];
   method: GenerationMethod;
   buildPreferences?: BuildLookAnswers;
+  products?: import("@/app/types/domain").Product[];
 } | null {
   if (typeof window === "undefined") return null;
   try {
@@ -464,5 +458,5 @@ export function recommendProducts(filters: {
     sizes: filters.sizes,
     priceRange: filters.priceRange,
     independentOnly: filters.independentOnly,
-  }).slice(0, 12);
+  }, undefined, getVerifiedProductsSync()).slice(0, 12);
 }

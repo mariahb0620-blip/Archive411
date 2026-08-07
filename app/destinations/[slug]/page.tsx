@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import AppImage from "@/app/components/AppImage";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import AppHeader from "@/app/components/AppHeader";
@@ -35,7 +35,7 @@ function DestinationContent() {
       <AppHeader />
       <main id="main-content" tabIndex={-1} className="container-editorial pt-24 pb-16 md:pt-28">
         <div className="relative mb-10 aspect-[21/9] overflow-hidden border border-smoke/40">
-          <Image src={store.coverImageUrl} alt={store.name} fill className="object-cover" sizes="1200px" />
+          <AppImage src={store.coverImageUrl} alt={store.name} fill className="object-cover" sizes="1200px" />
         </div>
 
         <header className="border-b border-smoke/30 pb-8">
@@ -82,7 +82,7 @@ function DestinationContent() {
             {products.map((p) => (
               <div key={p.id} className="border border-smoke/50 bg-charcoal">
                 <div className="relative aspect-square">
-                  <Image src={p.imageUrls[0]} alt={p.name} fill className="object-cover" sizes="300px" />
+                  <AppImage src={p.imageUrls[0]} alt={p.name} fill className="object-cover" sizes="300px" />
                 </div>
                 <div className="p-4">
                   <p className="text-sm text-ivory">{p.name}</p>

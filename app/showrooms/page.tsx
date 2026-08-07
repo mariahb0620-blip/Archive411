@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import AppImage from "@/app/components/AppImage";
 import AppHeader from "@/app/components/AppHeader";
 import RouteGuard from "@/app/components/RouteGuard";
 import { getAllShowrooms } from "@/app/services/showroom.service";
@@ -33,7 +33,7 @@ function ShowroomsContent() {
               className="group border border-smoke/50 bg-charcoal transition-colors hover:border-accent/50"
             >
               <div className="relative aspect-[16/10] overflow-hidden">
-                <Image
+                <AppImage
                   src={sr.coverImageUrl}
                   alt={sr.name}
                   fill

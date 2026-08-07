@@ -46,6 +46,18 @@ export const drawerVariants = {
   },
 };
 
+export const bottomSheetVariants = {
+  hidden: { y: "100%" },
+  visible: {
+    y: 0,
+    transition: { type: "spring", damping: 32, stiffness: 340 },
+  },
+  exit: {
+    y: "100%",
+    transition: { duration: 0.28, ease: EDITORIAL_EASE },
+  },
+};
+
 export const backdropVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.3 } },

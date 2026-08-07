@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import AppImage from "@/app/components/AppImage";
 import AppHeader from "@/app/components/AppHeader";
 import RouteGuard from "@/app/components/RouteGuard";
 import { MOCK_CONCEPT_STORES, MOCK_VINTAGE_SELLERS } from "@/app/data/mockCatalog";
@@ -28,7 +28,7 @@ function DestinationsContent() {
                 className="border border-smoke/50 bg-charcoal"
               >
                 <div className="relative aspect-[16/10]">
-                  <Image src={store.coverImageUrl} alt={store.name} fill className="object-cover" sizes="600px" />
+                  <AppImage src={store.coverImageUrl} alt={store.name} fill className="object-cover" sizes="600px" />
                 </div>
                 <div className="p-5">
                   <p className="text-xs text-muted">{store.city}, {store.country}</p>

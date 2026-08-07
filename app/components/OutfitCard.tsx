@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
+import AppImage from "@/app/components/AppImage";
 import { formatPrice } from "@/app/utils/affiliate";
 import type { OutfitLook } from "@/app/types/styling";
 import { staggerItem } from "@/app/lib/motion";
@@ -21,7 +21,7 @@ export default function OutfitCard({ look, onClick }: OutfitCardProps) {
       aria-label={`View ${look.title} look details`}
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-charcoal">
-        <Image
+        <AppImage
           src={look.heroImageUrl}
           alt={look.title}
           fill

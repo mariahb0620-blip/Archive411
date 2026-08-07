@@ -11,6 +11,7 @@ import {
   MOCK_VINTAGE_SELLERS,
   MOCK_SHOWROOMS,
 } from "@/app/data/seed";
+import { getVerifiedProductsSync } from "@/lib/catalog/verifiedPool";
 import {
   PRIORITY_CONCEPT_STORE_IDS,
   PRIORITY_DESIGNER_IDS,
@@ -23,6 +24,11 @@ import { communitySearchAesthetics } from "@/app/data/styleCommunities";
 import { checkSizeAvailability } from "@/app/utils/sizeAvailability";
 import { pickRandom, rotateArray, shuffleArray } from "@/app/utils/pickRandom";
 import { scorePresentationMatch } from "@/app/utils/presentationMatch";
+
+/** Verified beta catalog — never default to mock reference products. */
+function verifiedPool(override?: Product[]): Product[] {
+  return override ?? getVerifiedProductsSync();
+}
 
 /** Round-robin across cities/sources so results aren't always the same market. */
 const GLOBAL_SOURCE_REGIONS = [
@@ -265,10 +271,12 @@ function scoreProduct(
 
 export function rankCatalogProducts(
   filters: SearchFilters,
-  presentations?: string[]
+  presentations?: string[],
+  pool?: Product[]
 ): Product[] {
   const terms = queryTerms(filters.query);
-  const scored = [...MOCK_PRODUCTS]
+  const catalog = verifiedPool(pool).filter((p) => !p.isReferenceExample);
+  const scored = [...catalog]
     .map((product) => ({
       product,
       score: scoreProduct(product, filters, terms, presentations),
@@ -301,14 +309,16 @@ function productMatchesDepartment(
 
 export function searchCatalog(
   filters: SearchFilters,
-  presentations?: string[]
+  presentations?: string[],
+  pool?: Product[]
 ): Product[] {
-  const ranked = rankCatalogProducts(filters, presentations);
+  const catalog = verifiedPool(pool).filter((p) => !p.isReferenceExample);
+  const ranked = rankCatalogProducts(filters, presentations, catalog);
   if (ranked.length > 0) return ranked;
 
   return rotateArray(
     interleaveGlobalSources(
-      [...MOCK_PRODUCTS]
+      [...catalog]
         .filter(isRosterProduct)
         .sort(
           (a, b) =>
@@ -328,8 +338,10 @@ export interface AssembledLook {
 /** Source diversity: independent, price alternative, accessory/footwear, geographic spread when relevant. */
 export function assembleDiverseLook(
   filters: SearchFilters,
-  answers?: BuildLookAnswers
+  answers?: BuildLookAnswers,
+  pool?: Product[]
 ): AssembledLook {
+  const productPool = verifiedPool(pool);
   const styleAesthetics =
     answers?.styleDirections?.flatMap((id) => STYLE_TO_AESTHETIC[id] ?? []) ?? [];
   const communityAesthetics =
@@ -358,7 +370,8 @@ export function assembleDiverseLook(
       sizes: filters.sizes ?? collectSizesFromBuild(answers),
       shippingDestination: filters.shippingDestination ?? answers?.location,
     },
-    presentations
+    presentations,
+    productPool
   );
 
   if (candidates.length === 0) {

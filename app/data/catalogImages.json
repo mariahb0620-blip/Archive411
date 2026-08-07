@@ -1,0 +1,17 @@
+{
+  "catalog": {
+    "tops": "/images/catalog/product-tops.png",
+    "bottoms": "/images/catalog/product-bottoms.png",
+    "dresses": "/images/catalog/product-dresses.png",
+    "outerwear": "/images/catalog/product-outerwear.png",
+    "shoes": "/images/catalog/product-shoes.png",
+    "handbags": "/images/catalog/product-handbags.png",
+    "jewelry": "/images/catalog/product-jewelry.png",
+    "accessories": "/images/catalog/product-accessories.png",
+    "default": "/images/catalog/product-default.png"
+  },
+  "editorial": {
+    "cover": "/images/editorial/cover.png",
+    "panel": "/images/editorial/panel.png"
+  }
+}

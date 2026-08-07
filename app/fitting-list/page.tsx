@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import AppImage from "@/app/components/AppImage";
 import AppHeader from "@/app/components/AppHeader";
 import EditorialButton from "@/app/components/EditorialButton";
 import ShowroomNotice from "@/app/components/showroom/ShowroomNotice";
@@ -78,7 +78,7 @@ function FittingListContent() {
                   return (
                     <li key={item.id} className="flex gap-4 py-5">
                       <div className="relative h-20 w-16 shrink-0 overflow-hidden border border-smoke/40">
-                        <Image
+                        <AppImage
                           src={product.imageUrls[0]}
                           alt={product.name}
                           fill

@@ -218,6 +218,7 @@ export const CONTEXT_STEPS = [
 
 export type BuildStepId =
   | "styleDirections"
+  | "styleInspiration"
   | "clothingPresentation"
   | "clothingSizes"
   | "contextBrief"
@@ -238,13 +239,14 @@ const KAWAII_MAP: Record<string, string> = {
   "Full expression": "full-expression",
 };
 
-export function getBuildSteps(_answers?: {
+export function getBuildSteps(_answers?: { // eslint-disable-line @typescript-eslint/no-unused-vars
   footwear?: { inclusion?: string };
   styleDirections?: string[];
   fashionCommunities?: string[];
 }): BuildStepId[] {
   return [
     "styleDirections",
+    "styleInspiration",
     "clothingPresentation",
     "clothingSizes",
     "contextBrief",
