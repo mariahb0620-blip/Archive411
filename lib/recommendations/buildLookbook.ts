@@ -7,8 +7,13 @@ import type {
 } from "@/app/types/domain";
 import { BETA_DESIGNERS, BETA_PRODUCTS } from "@/app/data/betaCatalog";
 import { EDITORIAL_COVER } from "@/app/data/catalogImages";
-import { getCatalogProducts, getCatalogDesigners } from "@/lib/catalog/getCatalog";
+import { getCatalogProducts, getCatalogDesigners, getRecommendationEligibleProducts } from "@/lib/catalog/getCatalog";
 import { generateLookbookFromBuildForPool } from "@/lib/recommendations/generateForPool";
+import { filterRecommendationEligible } from "@/lib/catalog/isRecommendationEligible";
+
+function filterPoolForRecommendations(pool: Product[]): Product[] {
+  return filterRecommendationEligible(pool);
+}
 
 export interface BuildRecommendationResult {
   lookbook: Lookbook;
@@ -24,7 +29,10 @@ export async function buildLookbookRecommendation(
   answers: BuildLookAnswers,
   productPool?: Product[]
 ): Promise<BuildRecommendationResult> {
-  const products = productPool ?? (await getCatalogProducts());
+  const allProducts = productPool ?? (await getCatalogProducts());
+  const products = productPool
+    ? filterPoolForRecommendations(productPool)
+    : await getRecommendationEligibleProducts();
   const designers = await getCatalogDesigners();
 
   if (!products.length) {
@@ -51,9 +59,9 @@ export async function buildLookbookRecommendation(
     };
   }
 
-  const originalProducts = products;
+  const originalProducts = allProducts;
   // Temporarily inject verified pool into lookbook service via module override pattern
-  const { lookbook, looks } = generateLookbookFromBuildForPool(answers, originalProducts);
+  const { lookbook, looks } = generateLookbookFromBuildForPool(answers, products);
 
   const usedProductIds = new Set(looks.flatMap((l) => l.productIds));
   const usedProducts = originalProducts.filter((p) => usedProductIds.has(p.id));
@@ -91,7 +99,7 @@ export async function findReplacementProduct(params: {
   excludeIds: string[];
   answers?: BuildLookAnswers;
 }): Promise<Product | null> {
-  const products = await getCatalogProducts();
+  const products = await getRecommendationEligibleProducts();
   const candidates = products.filter(
     (p) =>
       p.category === params.category &&

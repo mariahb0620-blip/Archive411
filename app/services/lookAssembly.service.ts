@@ -11,6 +11,9 @@ import {
   shoeMatchTier,
 } from "@/app/utils/occasionRules";
 import { pickRandom, rotateArray, shuffleArray } from "@/app/utils/pickRandom";
+import {
+  canAddProductForDiversity,
+} from "@/lib/catalog/diversity";
 
 function id(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -101,7 +104,10 @@ function pickForLook(
       (p) =>
         predicate(p) &&
         !selected.includes(p) &&
-        (!p.designerId || !usedDesignerIds.has(p.designerId) || selected.length >= 2)
+        canAddProductForDiversity(p, selected, {
+          sessionUsedDesignerIds: usedDesignerIds,
+          sessionUsedProductIds: usedProductIds,
+        })
     );
     const item = pickRandom(matches, 14);
     if (item) {
@@ -159,6 +165,12 @@ function pickForLook(
   const remainder = shuffleArray(available.filter((p) => !selected.includes(p)));
   for (const p of remainder) {
     if (selected.length >= 5) break;
+    if (!canAddProductForDiversity(p, selected, {
+      sessionUsedDesignerIds: usedDesignerIds,
+      sessionUsedProductIds: usedProductIds,
+    })) {
+      continue;
+    }
     if (p.category === "shoes") {
       const tier = shoeMatchTier(p, context.dressingFor, context.footwearTypes);
       if (tier === "none") continue;

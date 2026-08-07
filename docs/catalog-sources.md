@@ -2,22 +2,23 @@
 
 Verified designers in the Archive411 catalog. All URLs checked manually; no `example.com` in production paths.
 
-## Beta core (8 designers, 20 products)
+## Beta core (8 designers, 18 products — all shoppable)
 
 | Designer | City | Website | Status |
 |----------|------|---------|--------|
-| GUAPÉ Studio | London | https://guapestudio.com/ | Verified |
-| Telfar | New York | https://telfar.net/ | Verified |
-| Salomon | Annecy | https://www.salomon.com/ | Verified |
-| Collina Strada | New York | https://collinastrada.com/ | Verified |
-| Martine Rose | London | https://martine-rose.com/ | Verified |
-| Wales Bonner | London | https://walesbonner.com/ | Verified |
-| El Dantés | Mexico City | https://eldantes.com/ | Verified |
-| GUZIO | New York | https://guzio.nyc/ | Verified |
+| GUAPÉ Studio | London | https://guapestudio.com/ | Verified SKU URLs |
+| Telfar | New York | https://telfar.net/ | Verified SKU URLs |
+| Salomon | Annecy | https://www.salomon.com/ | Verified SKU URLs |
+| Collina Strada | New York | https://collinastrada.com/ | Verified SKU URLs |
+| Martine Rose | London | https://martine-rose.com/ | Verified SKU URLs |
+| Wales Bonner | London | https://walesbonner.com/ | Verified SKU URLs |
+| GUZIO | New York | https://guzio.nyc/ | Verified SKU URLs |
 
-## Extended roster (22 designers, 1 signature product each)
+El Dantés is listed as a featured designer but has no shoppable SKU in catalog (site was unreachable).
 
-See [`app/data/extendedCatalog.ts`](../app/data/extendedCatalog.ts) for full list including Luar, Sandy Liang, Mowalola, Marine Serre, Jacquemus, Sretsis, Needles, AMBUSH, and others from the Concepts PDF.
+## Extended roster (24 designers, 1 signature product each — browse-only)
+
+See [`app/data/extendedCatalog.ts`](../app/data/extendedCatalog.ts). These use designer homepages (`verification_status: homepage_redirect`) and are **excluded from shoppable recommendations** until exact product URLs are imported.
 
 ## Data limitations
 
@@ -29,9 +30,16 @@ See [`app/data/extendedCatalog.ts`](../app/data/extendedCatalog.ts) for full lis
 ## Verification
 
 ```bash
-npm run catalog:verify   # URL + field validation
-npm run catalog:seed     # Upsert to Supabase
+npm run catalog:verify        # Eligibility + flow regression
+npm run catalog:verify-links  # Live HTTP check (OpenAI advisory only, never source of truth)
+npm run catalog:coverage      # Occasion/presentation gap report
+npm run catalog:stale         # Verification recheck report
+npm run catalog:import        # JSON curated import
+npm run catalog:discover-shopify  # List Shopify /products/ URLs for catalog maintenance
+npm run catalog:seed          # Upsert to Supabase (after migration 003)
 ```
+
+See [catalog-pipeline.md](./catalog-pipeline.md).
 
 ## Authorization policy
 

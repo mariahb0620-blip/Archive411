@@ -21,6 +21,7 @@ import { inspirationTagsForIds } from "@/app/data/styleInspiration";
 import { communitySearchAesthetics } from "@/app/data/styleCommunities";
 import { resolveDepartmentFromBuild } from "@/app/utils/presentationMatch";
 import { isOccasionAppropriate } from "@/app/utils/occasionRules";
+import { filterRecommendationEligible } from "@/lib/catalog/isRecommendationEligible";
 import { EDITORIAL_COVER } from "@/app/data/catalogImages";
 import { coverFromProducts, normalizeCoverImageUrl } from "@/app/data/productImagery";
 
@@ -107,7 +108,7 @@ export function generateLookbookFromBuildForPool(
   const aestheticTags = styleAestheticTags(answers);
   const footwearExcluded = answers.footwear?.inclusion === "no";
 
-  let filteredPool = pool.filter((p) => !p.isReferenceExample);
+  let filteredPool = filterRecommendationEligible(pool.filter((p) => !p.isReferenceExample));
   if (footwearExcluded) {
     filteredPool = filteredPool.filter((p) => p.category !== "shoes");
   }

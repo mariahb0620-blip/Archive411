@@ -11,7 +11,7 @@ import {
   MOCK_VINTAGE_SELLERS,
   MOCK_SHOWROOMS,
 } from "@/app/data/seed";
-import { getVerifiedProductsSync } from "@/lib/catalog/verifiedPool";
+import { getRecommendationEligibleProductsSync } from "@/lib/catalog/verifiedPool";
 import {
   PRIORITY_CONCEPT_STORE_IDS,
   PRIORITY_DESIGNER_IDS,
@@ -27,9 +27,9 @@ import { scorePresentationMatch } from "@/app/utils/presentationMatch";
 import { scorePriceTierMatch } from "@/app/utils/priceTier";
 import { scoreOccasionMatch } from "@/app/utils/occasionRules";
 
-/** Verified beta catalog — never default to mock reference products. */
+/** Verified beta catalog — shoppable eligible products only for recommendations. */
 function verifiedPool(override?: Product[]): Product[] {
-  return override ?? getVerifiedProductsSync();
+  return override ?? getRecommendationEligibleProductsSync();
 }
 
 /** Round-robin across cities/sources so results aren't always the same market. */

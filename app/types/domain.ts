@@ -147,6 +147,31 @@ export type DepartmentFilter =
 
 export type ProductCondition = "new" | "vintage" | "resale" | "archive";
 
+export type VerificationStatus =
+  | "pending"
+  | "verified"
+  | "unavailable"
+  | "broken_url"
+  | "homepage_redirect"
+  | "missing_data"
+  | "manual_review";
+
+export type ProductSourceType =
+  | "manual"
+  | "curated"
+  | "rakuten"
+  | "retailer_feed"
+  | "shopify";
+
+export type ImageSource =
+  | "retailer"
+  | "designer"
+  | "rakuten"
+  | "category_placeholder"
+  | "unknown";
+
+export type AffiliateNetwork = "rakuten" | "impact" | "direct" | "none";
+
 export type DesignerLabelType =
   | "independent-designer"
   | "emerging-designer"
@@ -259,6 +284,26 @@ export interface Product {
   updatedAt: string;
   /** How the user acquires this piece — showroom items require fitting/reservation flow. */
   purchaseFlow?: "direct" | "showroom-fitting" | "made-to-order";
+  /** Canonical source URL (may differ from affiliate destination). */
+  sourceUrl?: string;
+  sourceType?: ProductSourceType;
+  sourceProductId?: string;
+  retailerName?: string;
+  designerName?: string;
+  imageSource?: ImageSource;
+  styleTags?: string[];
+  seasonTags?: string[];
+  colorTags?: string[];
+  footwearType?: string;
+  heelHeight?: string;
+  verified?: boolean;
+  verificationStatus?: VerificationStatus;
+  verifiedAt?: string;
+  lastCheckedAt?: string;
+  verificationMethod?: string;
+  affiliateUrl?: string;
+  affiliateNetwork?: AffiliateNetwork;
+  stockStatus?: string;
 }
 
 export type ShowroomType =

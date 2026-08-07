@@ -5,6 +5,7 @@
 import type { Designer, Product } from "@/app/types/domain";
 import { normalizeProductImagery } from "@/app/data/productImagery";
 import { designerCoverImage, productImage } from "@/app/data/catalogImages";
+import { classifyProductUrl } from "@/app/utils/productLinkQuality";
 
 const now = new Date().toISOString();
 
@@ -15,12 +16,21 @@ function designer(
 }
 
 function product(p: Omit<Product, "updatedAt" | "lastVerifiedAt">): Product {
+  const tier = classifyProductUrl(p.productUrl);
+  const verificationStatus = tier === "product" ? "verified" : "homepage_redirect";
   return normalizeProductImagery({
     ...p,
     lastVerifiedAt: now,
     updatedAt: now,
     isReferenceExample: false,
-    imageUrls: [productImage(p.category)],
+    imageUrls: p.imageUrls?.length ? p.imageUrls : [productImage(p.category)],
+    imageSource: "category_placeholder",
+    sourceType: "curated",
+    sourceUrl: p.productUrl,
+    verified: false,
+    verificationStatus,
+    verificationMethod: "extended_roster_homepage",
+    lastCheckedAt: now,
   });
 }
 

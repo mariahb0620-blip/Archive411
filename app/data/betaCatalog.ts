@@ -5,16 +5,27 @@
 import type { Designer, Product } from "@/app/types/domain";
 import { normalizeProductImagery } from "@/app/data/productImagery";
 import { productImage, designerCoverImage } from "@/app/data/catalogImages";
+import { classifyProductUrl } from "@/app/utils/productLinkQuality";
 
 const now = new Date().toISOString();
 
 function product(p: Omit<Product, "updatedAt" | "lastVerifiedAt">): Product {
+  const tier = classifyProductUrl(p.productUrl);
+  const verificationStatus = tier === "product" ? "verified" : "homepage_redirect";
   return normalizeProductImagery({
     ...p,
     lastVerifiedAt: now,
     updatedAt: now,
     isReferenceExample: false,
-    imageUrls: [productImage(p.category)],
+    imageUrls: p.imageUrls?.length ? p.imageUrls : [productImage(p.category)],
+    imageSource: "category_placeholder",
+    sourceType: "curated",
+    sourceUrl: p.productUrl,
+    verified: verificationStatus === "verified",
+    verificationStatus,
+    verificationMethod: "manual_curated",
+    verifiedAt: verificationStatus === "verified" ? now : undefined,
+    lastCheckedAt: now,
   });
 }
 
@@ -197,7 +208,7 @@ const BETA_DESIGNERS_RAW: Designer[] = [
     city: "New York",
     country: "United States",
     coverImageUrl: "/placeholders/product-dresses.svg",
-    website: "https://guzio.nyc/",
+    website: "https://danielleguiziony.com/",
     socialLinks: {},
     aestheticTags: ["y2k", "hot-girl-y2k", "going-out"],
     sizeRange: "XS–L",
@@ -225,7 +236,7 @@ export const BETA_PRODUCTS: Product[] = [
     id: "beta-guape-heels",
     name: "Sculptural heel — GUAPÉ Studio",
     description: "Artisanal London heel from GUAPÉ Studio shop.",
-    productUrl: "https://guapestudio.com/",
+    productUrl: "https://guapestudio.com/products/mesh-ribbon-heels-black",
     imageUrls: ["/placeholders/product-shoes.svg"],
     category: "shoes",
     subcategory: "heel",
@@ -248,7 +259,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-telfar-bag",
     name: "Shopping Bag — Medium",
-    productUrl: "https://telfar.net/collections/shopping",
+    productUrl: "https://telfar.net/products/medium-shopping-bag-black",
     imageUrls: ["/placeholders/product-handbags.svg"],
     category: "handbags",
     availableSizes: ["One Size"],
@@ -269,7 +280,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-salomon-xt6",
     name: "XT-6 — technical sneaker",
-    productUrl: "https://www.salomon.com/en-us/c/footwear",
+    productUrl: "https://www.salomon.com/en-us/product/xt-6-lg4239",
     imageUrls: ["/placeholders/product-shoes.svg"],
     category: "shoes",
     subcategory: "sneaker",
@@ -290,7 +301,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-collina-mesh-top",
     name: "Printed mesh top",
-    productUrl: "https://collinastrada.com/collections/all",
+    productUrl: "https://collinastrada.com/products/black-watercolor-floral-raina-top-black-watercolor-floral",
     imageUrls: ["/placeholders/product-tops.svg"],
     category: "tops",
     availableSizes: ["XS", "S", "M", "L"],
@@ -312,7 +323,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-collina-cargo",
     name: "Cargo trouser",
-    productUrl: "https://collinastrada.com/collections/all",
+    productUrl: "https://collinastrada.com/products/black-watercolor-floral-lawn-cargo-pant-black-watercolor-floral",
     imageUrls: ["/placeholders/product-bottoms.svg"],
     category: "bottoms",
     availableSizes: ["XS", "S", "M", "L"],
@@ -334,7 +345,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-martine-rose-jacket",
     name: "Oversized track jacket",
-    productUrl: "https://martine-rose.com/collections/all",
+    productUrl: "https://martine-rose.com/products/hood-cap-track-jacket-in-black",
     imageUrls: ["/placeholders/product-outerwear.svg"],
     category: "outerwear",
     availableSizes: ["S", "M", "L", "XL"],
@@ -355,7 +366,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-martine-trouser",
     name: "Wide-leg tailored trouser",
-    productUrl: "https://martine-rose.com/collections/all",
+    productUrl: "https://martine-rose.com/products/wide-leg-track-pant-in-burgundy",
     imageUrls: ["/placeholders/product-bottoms.svg"],
     category: "bottoms",
     availableSizes: ["S", "M", "L", "XL"],
@@ -376,7 +387,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-wales-knit",
     name: "Graphic knit polo",
-    productUrl: "https://walesbonner.com/collections/all",
+    productUrl: "https://walesbonner.com/products/dawn-knit-polo-2",
     imageUrls: ["/placeholders/product-tops.svg"],
     category: "knitwear",
     availableSizes: ["S", "M", "L"],
@@ -397,7 +408,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-wales-trouser",
     name: "Tailored wide trouser",
-    productUrl: "https://walesbonner.com/collections/all",
+    productUrl: "https://walesbonner.com/products/sierra-trouser-1",
     imageUrls: ["/placeholders/product-bottoms.svg"],
     category: "bottoms",
     availableSizes: ["S", "M", "L"],
@@ -416,32 +427,9 @@ export const BETA_PRODUCTS: Product[] = [
     isIndependentDesigner: true,
   }),
   product({
-    id: "beta-eldantes-boot",
-    name: "Sculptural platform boot",
-    productUrl: "https://eldantes.com/",
-    imageUrls: ["/placeholders/product-shoes.svg"],
-    category: "shoes",
-    subcategory: "boot",
-    availableSizes: ["36", "37", "38", "39", "40"],
-    sizingSystem: "EU",
-    price: 420,
-    currency: "USD",
-    designerId: "des-el-dantes",
-    aestheticTags: ["avant-garde", "goth", "experimental"],
-    presentationTags: ["feminine", "androgynous"],
-    occasionTags: ["event", "evening"],
-    climateTags: ["autumn", "winter"],
-    departmentTags: ["womenswear", "gender-neutral"],
-    inventoryStatus: "made-to-order",
-    madeToOrder: true,
-    shippingDestinations: ["US", "EU", "MX"],
-    condition: "new",
-    isIndependentDesigner: true,
-  }),
-  product({
     id: "beta-guzio-mini-dress",
     name: "Fitted mini dress",
-    productUrl: "https://guzio.nyc/collections/all",
+    productUrl: "https://danielleguiziony.com/products/satin-corset-dress",
     imageUrls: ["/placeholders/product-dresses.svg"],
     category: "dresses",
     availableSizes: ["XS", "S", "M", "L"],
@@ -463,7 +451,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-guzio-corset",
     name: "Corset top",
-    productUrl: "https://guzio.nyc/collections/all",
+    productUrl: "https://danielleguiziony.com/products/marini-corset-top",
     imageUrls: ["/placeholders/product-tops.svg"],
     category: "tops",
     subcategory: "corset",
@@ -486,7 +474,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-telfar-wallet",
     name: "Wallet — Small",
-    productUrl: "https://telfar.net/collections/accessories",
+    productUrl: "https://telfar.net/products/telfar-wallet-red",
     imageUrls: ["/placeholders/product-accessories.svg"],
     category: "accessories",
     availableSizes: ["One Size"],
@@ -507,7 +495,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-salomon-jacket",
     name: "Technical shell jacket",
-    productUrl: "https://www.salomon.com/en-us/c/apparel",
+    productUrl: "https://www.salomon.com/en-us/product/moon-patrol-gore-tex-lc13822",
     imageUrls: ["/placeholders/product-outerwear.svg"],
     category: "outerwear",
     availableSizes: ["S", "M", "L", "XL"],
@@ -526,7 +514,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-guape-bag",
     name: "Mini shoulder bag — GUAPÉ Studio",
-    productUrl: "https://guapestudio.com/",
+    productUrl: "https://guapestudio.com/products/orchid-mule-gold-chrome-gold",
     imageUrls: ["/placeholders/product-handbags.svg"],
     category: "handbags",
     availableSizes: ["One Size"],
@@ -547,7 +535,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-collina-dress",
     name: "Sheer layered dress",
-    productUrl: "https://collinastrada.com/collections/all",
+    productUrl: "https://collinastrada.com/products/black-watercolor-floral-anemone-dress-black-watercolor-floral",
     imageUrls: ["/placeholders/product-dresses.svg"],
     category: "dresses",
     availableSizes: ["XS", "S", "M"],
@@ -569,7 +557,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-martine-shirt",
     name: "Oversized graphic shirt",
-    productUrl: "https://martine-rose.com/collections/all",
+    productUrl: "https://martine-rose.com/products/s-s-oversized-t-shirt-in-black",
     imageUrls: ["/placeholders/product-tops.svg"],
     category: "tops",
     availableSizes: ["S", "M", "L", "XL"],
@@ -590,7 +578,7 @@ export const BETA_PRODUCTS: Product[] = [
   product({
     id: "beta-wales-coat",
     name: "Structured wool coat",
-    productUrl: "https://walesbonner.com/collections/all",
+    productUrl: "https://walesbonner.com/products/sierra-coat",
     imageUrls: ["/placeholders/product-outerwear.svg"],
     category: "outerwear",
     availableSizes: ["S", "M", "L"],
@@ -609,32 +597,9 @@ export const BETA_PRODUCTS: Product[] = [
     isIndependentDesigner: true,
   }),
   product({
-    id: "beta-eldantes-heel",
-    name: "Sculptural mule heel",
-    productUrl: "https://eldantes.com/",
-    imageUrls: ["/placeholders/product-shoes.svg"],
-    category: "shoes",
-    subcategory: "mule",
-    availableSizes: ["36", "37", "38", "39"],
-    sizingSystem: "EU",
-    price: 380,
-    currency: "USD",
-    designerId: "des-el-dantes",
-    aestheticTags: ["avant-garde", "sculptural"],
-    presentationTags: ["feminine", "androgynous"],
-    occasionTags: ["event", "evening"],
-    climateTags: ["spring", "summer"],
-    departmentTags: ["womenswear", "gender-neutral"],
-    inventoryStatus: "made-to-order",
-    madeToOrder: true,
-    shippingDestinations: ["US", "EU"],
-    condition: "new",
-    isIndependentDesigner: true,
-  }),
-  product({
     id: "beta-guzio-skirt",
     name: "Low-rise mini skirt",
-    productUrl: "https://guzio.nyc/collections/all",
+    productUrl: "https://danielleguiziony.com/products/micro-mini-stretch-skirt",
     imageUrls: ["/placeholders/product-bottoms.svg"],
     category: "bottoms",
     subcategory: "skirt",
@@ -657,5 +622,5 @@ export const BETA_PRODUCTS: Product[] = [
 ];
 
 export function isBetaCatalogUrl(url: string): boolean {
-  return !url.includes("example.com");
+  return !url.includes("example.com") && url.trim().length > 0;
 }

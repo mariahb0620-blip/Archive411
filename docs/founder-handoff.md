@@ -6,7 +6,8 @@ Live walkthrough script for beta approval. Production deploy only after this rev
 
 - [x] Supabase tables created (`001_initial_schema.sql`)
 - [x] Archive features migration applied (`002_archive_features.sql`)
-- [x] Catalog seeded: `npm run catalog:seed` → **32 designers, 44 products** (verified in Supabase)
+- [x] Catalog seeded: `npm run catalog:seed` → **32 designers, 42 products** (18 shoppable + 24 browse-only)
+- [ ] Apply migration `003_product_verification.sql` then re-seed
 - [ ] Email confirmation **disabled** in Supabase Auth
 - [ ] Google OAuth provider **enabled** in Supabase Auth (optional for demo — email works without it)
 - [ ] Preview URL added to Supabase redirect URLs
@@ -86,9 +87,9 @@ Live walkthrough script for beta approval. Production deploy only after this rev
 | My Archive | Real (Supabase + RLS) |
 | Collections | Real (`/collections` + Supabase, migration 002) |
 | Saved designers API | Real (migration 002) |
-| Build My Look recommendations | Real (32 designers / 44 products, verified scoring) |
-| Search / Surprise | Real (verified catalog via API) |
-| Product links | Real URLs from verified catalog |
+| Build My Look recommendations | Real (18 verified SKU products in shoppable pool; 32 designers total) |
+| Search / Surprise | Real (eligible verified catalog only) |
+| Product links | Shop now → exact product URLs only; browse-only pieces excluded from looks |
 | Product images | Category PNG placeholders (not authorized SKU photos) |
 | Designer dashboard | Shell — application status + roadmap sections |
 | Quick Generate (`/generate`) | Redirects to Build My Look |
@@ -118,7 +119,8 @@ See [deployment.md](./deployment.md) — promote previous Vercel deployment; dat
 
 ## Reference
 
-- Catalog verification: `npm run catalog:verify`
+- Catalog verification: `npm run catalog:verify`, `npm run catalog:coverage`
+- Pipeline docs: [catalog-pipeline.md](./catalog-pipeline.md)
 - Full QA report: [qa-report.md](./qa-report.md)
 - Known limitations: [known-issues.md](./known-issues.md)
 - Completion summary: [completion-report.md](./completion-report.md)

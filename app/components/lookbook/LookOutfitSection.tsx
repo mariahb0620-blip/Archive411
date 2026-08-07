@@ -8,7 +8,8 @@ import { getVerifiedDesignersSync } from "@/lib/catalog/verifiedPool";
 import { productImage } from "@/app/data/catalogImages";
 import { formatCurrency, checkSizeAvailability } from "@/app/services/lookbook.service";
 import { isShowroomProduct } from "@/app/services/showroom.service";
-import { resolveProductShopUrl } from "@/app/utils/productShopUrl";
+import { resolveProductShopUrl, resolveDesignerBrowseUrl } from "@/app/utils/productShopUrl";
+import { isCategoryPlaceholderImage } from "@/lib/catalog/imagePolicy";
 import type { Look, Product } from "@/app/types/domain";
 
 interface LookOutfitSectionProps {
@@ -83,9 +84,12 @@ export default function LookOutfitSection({
             : undefined;
           const sizeStatus = checkSizeAvailability(product, userSizes);
           const isSoldOut = product.inventoryStatus === "sold-out";
-          const shopUrl = resolveProductShopUrl(product, designer?.website);
+          const shopUrl = resolveProductShopUrl(product);
+          const browseUrl = resolveDesignerBrowseUrl(product, designer?.website);
           const showroomFlow = isShowroomProduct(product);
           const imageSrc = product.imageUrls[0] ?? productImage(product.category);
+          const isPlaceholderImage =
+            product.imageSource === "category_placeholder" || isCategoryPlaceholderImage(imageSrc);
 
           const imageBlock = (
             <div className="relative aspect-[3/4] overflow-hidden bg-charcoal/40">
@@ -111,21 +115,33 @@ export default function LookOutfitSection({
               ) : (
                 imageBlock
               )}
+              {isPlaceholderImage && (
+                <p className="px-3 pt-2 text-[10px] leading-relaxed text-muted">
+                  Category illustration — authorized product photo pending.
+                </p>
+              )}
 
               <div className="flex flex-1 flex-col p-3 md:p-4">
                 <p className="text-[10px] uppercase tracking-[0.15em] text-muted">
                   {designer?.labelName ?? product.category}
                 </p>
-                {shopUrl && !showroomFlow ? (
-                  <ShopLink
-                    href={shopUrl}
-                    className="mt-1 line-clamp-2 text-sm text-ivory hover:text-accent"
-                  >
-                    {product.name}
-                  </ShopLink>
-                ) : (
-                  <p className="mt-1 line-clamp-2 text-sm text-ivory">{product.name}</p>
-                )}
+              {shopUrl && !showroomFlow ? (
+                <ShopLink
+                  href={shopUrl}
+                  className="mt-1 line-clamp-2 text-sm text-ivory hover:text-accent"
+                >
+                  {product.name}
+                </ShopLink>
+              ) : browseUrl && !showroomFlow ? (
+                <ShopLink
+                  href={browseUrl}
+                  className="mt-1 line-clamp-2 text-sm text-ivory hover:text-accent"
+                >
+                  {product.name}
+                </ShopLink>
+              ) : (
+                <p className="mt-1 line-clamp-2 text-sm text-ivory">{product.name}</p>
+              )}
                 <p className="mt-1 text-sm text-accent">
                   {formatCurrency(product.price, product.currency)}
                 </p>
@@ -154,6 +170,21 @@ export default function LookOutfitSection({
                     >
                       Shop now
                     </a>
+                    <ProductSourceActions product={product} userSizes={userSizes} />
+                  </div>
+                ) : browseUrl && !isSoldOut ? (
+                  <div className="mt-4 space-y-2">
+                    <a
+                      href={browseUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-smoke/60 px-4 py-3 text-center text-xs uppercase tracking-[0.2em] text-ivory transition-colors hover:border-accent active:scale-[0.98]"
+                    >
+                      Browse designer shop
+                    </a>
+                    <p className="text-[10px] leading-relaxed text-muted">
+                      Exact SKU link pending verification — opens the designer store.
+                    </p>
                     <ProductSourceActions product={product} userSizes={userSizes} />
                   </div>
                 ) : designer?.website ? (

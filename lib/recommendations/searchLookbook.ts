@@ -1,6 +1,6 @@
 import type { Look, Lookbook, Product, SearchFilters } from "@/app/types/domain";
 import { EDITORIAL_COVER } from "@/app/data/catalogImages";
-import { getCatalogDesigners, getCatalogProducts } from "@/lib/catalog/getCatalog";
+import { getCatalogDesigners, getRecommendationEligibleProducts } from "@/lib/catalog/getCatalog";
 import {
   assembleDiverseLook,
   searchCatalog,
@@ -24,7 +24,7 @@ export interface SearchRecommendationResult {
 export async function searchLookbookRecommendation(
   filters: SearchFilters
 ): Promise<SearchRecommendationResult> {
-  const products = await getCatalogProducts();
+  const products = await getRecommendationEligibleProducts();
   const designers = await getCatalogDesigners();
 
   if (!products.length) {

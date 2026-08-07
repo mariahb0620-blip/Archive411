@@ -1,6 +1,7 @@
 import type { Designer, Product } from "@/app/types/domain";
 import { createClient } from "@/lib/supabase/server";
 import { mapDesignerRow, mapProductRow } from "@/lib/db/mappers";
+import { filterRecommendationEligible } from "@/lib/catalog/isRecommendationEligible";
 import {
   LOCAL_DESIGNERS,
   LOCAL_PRODUCTS,
@@ -9,6 +10,7 @@ import {
 export {
   getVerifiedDesignersSync,
   getVerifiedProductsSync,
+  getRecommendationEligibleProductsSync,
   LOCAL_DESIGNERS,
   LOCAL_PRODUCTS,
 } from "@/lib/catalog/verifiedPool";
@@ -30,6 +32,12 @@ export async function getCatalogProducts(): Promise<Product[]> {
     }
   }
   return LOCAL_PRODUCTS;
+}
+
+/** Products eligible for shoppable recommendations (verified exact URLs). */
+export async function getRecommendationEligibleProducts(): Promise<Product[]> {
+  const all = await getCatalogProducts();
+  return filterRecommendationEligible(all);
 }
 
 export async function getCatalogDesigners(): Promise<Designer[]> {
