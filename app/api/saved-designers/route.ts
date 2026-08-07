@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getRequestSupabase } from "@/lib/supabase/server";
 
 export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const supabase = await getRequestSupabase();
   const { data, error } = await supabase
     .from("saved_designers")
     .select("designer_id, followed, created_at")
@@ -16,10 +16,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const supabase = await getRequestSupabase();
   const { designerId, followed = true } = await request.json();
   if (!designerId) {
     return NextResponse.json({ error: "designerId required" }, { status: 400 });
@@ -36,10 +36,10 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const supabase = await getRequestSupabase();
   const { searchParams } = new URL(request.url);
   const designerId = searchParams.get("designerId");
   if (!designerId) {

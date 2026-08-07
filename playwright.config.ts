@@ -9,12 +9,23 @@ export default defineConfig({
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000",
     trace: "on-first-retry",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-  webServer: process.env.CI
-    ? undefined
-    : {
-        command: "npm run dev",
-        url: "http://localhost:3000",
-        reuseExistingServer: true,
-      },
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "iphone-safari",
+      use: { ...devices["iPhone 14"] },
+    },
+    {
+      name: "android-chrome",
+      use: { ...devices["Pixel 7"] },
+    },
+  ],
+  webServer:
+    process.env.PLAYWRIGHT_BASE_URL || process.env.CI
+      ? undefined
+      : {
+          command: "npm run dev",
+          url: "http://localhost:3000",
+          reuseExistingServer: true,
+        },
 });

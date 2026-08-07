@@ -43,9 +43,9 @@
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Registry",
-      "short_name": "Registry",
-      "url": "/results",
+      "name": "Search",
+      "short_name": "Search",
+      "url": "/search",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {

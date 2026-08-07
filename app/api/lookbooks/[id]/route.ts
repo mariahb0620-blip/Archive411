@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { getAuthUser } from "@/lib/supabase/server";
+import { getAuthUser, getRequestSupabase } from "@/lib/supabase/server";
 import { getLookbookById, mapProductRow } from "@/lib/db/mappers";
 import { getCatalogProducts } from "@/lib/catalog/getCatalog";
-import { createClient } from "@/lib/supabase/server";
 
 export async function GET(
   _request: Request,
@@ -26,7 +25,7 @@ export async function GET(
 
     // Hydrate from DB if products exist there
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      const supabase = await createClient();
+      const supabase = await getRequestSupabase();
       const { data: dbProducts } = await supabase
         .from("products")
         .select("*")

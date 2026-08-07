@@ -43,9 +43,10 @@ Manual QA for private beta acceptance.
 - [ ] iOS Safari — full journey
 - [ ] Android Chrome — full journey
 - [ ] Desktop Chrome — full journey
-- [ ] LookDrawer: bottom sheet on mobile, side drawer on desktop
 
 ## Dead buttons
 
+- [ ] Quick Generate in Create menu is non-clickable
+- [ ] Save / Follow designer buttons disabled on designer profiles
 - [ ] Designer dashboard sections labeled "Coming soon"
 - [ ] No undocumented mock flows in primary tester path

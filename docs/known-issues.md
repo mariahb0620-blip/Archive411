@@ -4,7 +4,7 @@
 
 - **Catalog size:** 32 verified designers / 44 products (8 beta core + 22 extended). Concepts PDF roster partially ingested.
 - **Product images:** Category PNG placeholders until authorized SKU imagery is ingested.
-- **Quick Generate / Results:** Deprecated — redirect to Build My Look.
+- **Quick Generate / Results:** Redirect to Build My Look (`/generate`, `/results` → `/build`).
 - **Fitting lists API:** Ready; showroom pages still reference seed data.
 - **Affiliate feeds:** SSENSE/Farfetch URL builder only — no product feed ingestion.
 - **Capacitor native:** Scripts present; device validation recommended before App Store submit.
@@ -18,7 +18,6 @@
 
 ## Technical debt
 
-- `/api/generate` legacy mock endpoint — superseded by `/api/recommendations/build`
 - `beta:test` API HTTP checks require running server matching latest build
 - Guest migration not in automated test suite
 

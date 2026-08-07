@@ -124,6 +124,50 @@ async function main() {
   const lookbookId = `lb-test-${Date.now()}`;
   const lookbook = { ...resultA.lookbook, id: lookbookId, userId, saved: true };
 
+  try {
+    const buildRes = await fetch(`${appUrl}/api/recommendations/build`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(feminineY2K),
+    });
+    if (buildRes.ok) pass(`POST /api/recommendations/build → ${buildRes.status}`);
+    else fail(`POST /api/recommendations/build → ${buildRes.status}`);
+
+    const token = signInData.session!.access_token;
+    const apiLookbook = {
+      ...resultA.lookbook,
+      id: `lb-api-${Date.now()}`,
+    };
+    const apiLooks = resultA.looks.map((look, i) => ({
+      ...look,
+      id: `${look.id}-api-${Date.now()}-${i}`,
+      lookbookId: apiLookbook.id,
+    }));
+    const saveApiRes = await fetch(`${appUrl}/api/lookbooks`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        lookbook: { ...apiLookbook, saved: true },
+        looks: apiLooks,
+        method: "build",
+        buildPreferences: feminineY2K,
+      }),
+    });
+    if (saveApiRes.ok) pass(`POST /api/lookbooks → ${saveApiRes.status}`);
+    else fail(`POST /api/lookbooks → ${saveApiRes.status}`);
+
+    const lbRes = await fetch(`${appUrl}/api/lookbooks`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (lbRes.ok) pass(`GET /api/lookbooks → ${lbRes.status}`);
+    else fail(`GET /api/lookbooks → ${lbRes.status}`);
+  } catch {
+    console.log(`  SKIP — API route tests (dev server not running at ${appUrl})`);
+  }
+
   const { error: lbError } = await admin.from("lookbooks").upsert({
     id: lookbook.id,
     user_id: userId,
@@ -178,25 +222,6 @@ async function main() {
   if (listError) fail(`List archive: ${listError.message}`);
   else if (!archived?.some((lb) => lb.id === lookbookId)) fail("Saved lookbook not in archive");
   else pass(`Archive list contains saved lookbook (${archived.length} total)`);
-
-  try {
-    const buildRes = await fetch(`${appUrl}/api/recommendations/build`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(feminineY2K),
-    });
-    if (buildRes.ok) pass(`POST /api/recommendations/build → ${buildRes.status}`);
-    else fail(`POST /api/recommendations/build → ${buildRes.status}`);
-
-    const token = signInData.session!.access_token;
-    const lbRes = await fetch(`${appUrl}/api/lookbooks`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (lbRes.ok) pass(`GET /api/lookbooks → ${lbRes.status}`);
-    else fail(`GET /api/lookbooks → ${lbRes.status}`);
-  } catch {
-    console.log(`  SKIP — API route tests (dev server not running at ${appUrl})`);
-  }
 
   await cleanup();
   pass("Test user cleaned up");

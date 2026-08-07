@@ -1,10 +1,4 @@
-import type {
-  CurrencyCode,
-  Look,
-  Lookbook,
-  PriceRangeSelection,
-} from "@/app/types/domain";
-import { EDITORIAL_PLACEHOLDER } from "@/app/data/productImagery";
+import type { PriceRangeSelection } from "@/app/types/domain";
 
 export {
   MOCK_DESIGNERS,
@@ -16,18 +10,6 @@ export {
 
 export const MOCK_DISCLAIMER =
   "Mock development data — reference examples only. Not official partnerships. Structured for production API replacement.";
-
-export const CURRENCY_SYMBOLS: Record<CurrencyCode, string> = {
-  USD: "$",
-  GBP: "£",
-  EUR: "€",
-  VND: "₫",
-  THB: "฿",
-  JPY: "¥",
-  KRW: "₩",
-  NGN: "₦",
-  DKK: "kr",
-};
 
 export const PRICE_TIER_LABELS: Record<string, string> = {
   "under-50": "Under $50",
@@ -43,45 +25,6 @@ export const DEFAULT_PRICE_RANGE: PriceRangeSelection = {
   scope: "full-outfit",
   currency: "USD",
 };
-
-export const MOCK_LOOKBOOKS: Lookbook[] = [
-  {
-    id: "lb-01",
-    title: "Global Night Edit",
-    description: "Layered looks sourced across independent labels and concept stores.",
-    coverImageUrl: EDITORIAL_PLACEHOLDER,
-    generatedAt: "2026-02-15",
-    occasion: "Evening",
-    climate: "Humid",
-    location: "Ho Chi Minh City",
-    priceRange: DEFAULT_PRICE_RANGE,
-    aestheticTags: ["chic-and-sexy", "nightlife"],
-    visibility: "private",
-    generationMethod: "build",
-    saved: false,
-    collectionIds: [],
-  },
-];
-
-export const MOCK_LOOKS: Look[] = [
-  {
-    id: "look-01",
-    lookbookId: "lb-01",
-    title: "Humid Night Column",
-    explanation:
-      "A column silhouette blending independent Southeast Asian labels with archive accessories — calibrated to your preferred fit and presentation.",
-    totalEstimatedPrice: 248,
-    currency: "USD",
-    colorPalette: ["#1a1a1a", "#888888", "#c9b896"],
-    silhouetteTags: ["column", "body-conscious"],
-    occasionTags: ["nightlife", "beach-to-night"],
-    stylingExplanation:
-      "Feminine-androgynous styling assembled across departments — not limited to how each retailer categorizes the garment.",
-    matchExplanation:
-      "Sourced from participating designers, concept stores and vintage sellers with size and shipping checks applied.",
-    productIds: ["prod-bangkok-top", "prod-hcmc-heels", "prod-vintage-bag", "prod-budget-top"],
-  },
-];
 
 export const INTRO_SLIDES = [
   {
@@ -128,8 +71,5 @@ export const DISCOVERY_MODES = [
       "Discover independent and emerging designers shaping fashion across the world.",
   },
 ] as const;
-
-/** @deprecated Build flow uses buildQuestionnaire.ts */
-export const BUILD_QUESTIONS = [] as const;
 
 export { INDEPENDENT_SECTIONS, HOMEPAGE_COLLECTIONS, FASHION_CITIES } from "@/app/data/fashionCities";

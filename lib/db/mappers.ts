@@ -7,7 +7,7 @@ import type {
   Product,
 } from "@/app/types/domain";
 import { productImage } from "@/app/data/catalogImages";
-import { createClient } from "@/lib/supabase/server";
+import { getRequestSupabase } from "@/lib/supabase/server";
 
 export function mapProductRow(row: Record<string, unknown>): Product {
   return {
@@ -123,7 +123,7 @@ export async function saveLookbookToDb(params: {
   method: GenerationMethod;
   buildPreferences?: BuildLookAnswers;
 }): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await getRequestSupabase();
   const { lookbook, looks, userId, method, buildPreferences } = params;
 
   const { error: lbError } = await supabase.from("lookbooks").upsert({
@@ -181,7 +181,7 @@ export async function saveLookbookToDb(params: {
 }
 
 export async function listUserLookbooks(userId: string): Promise<Lookbook[]> {
-  const supabase = await createClient();
+  const supabase = await getRequestSupabase();
   const { data, error } = await supabase
     .from("lookbooks")
     .select("*")
@@ -196,7 +196,7 @@ export async function getLookbookById(
   userId: string,
   lookbookId: string
 ): Promise<{ lookbook: Lookbook; looks: Look[]; productIds: string[] } | null> {
-  const supabase = await createClient();
+  const supabase = await getRequestSupabase();
   const { data: lb, error } = await supabase
     .from("lookbooks")
     .select("*")

@@ -7,6 +7,12 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [],
   },
+  async redirects() {
+    return [
+      { source: "/results", destination: "/build", permanent: false },
+      { source: "/saved", destination: "/archive", permanent: false },
+    ];
+  },
 };
 
 export default nextConfig;

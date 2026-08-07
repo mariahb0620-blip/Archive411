@@ -1,4 +1,4 @@
-const CACHE_NAME = "archive411-v2";
+const CACHE_NAME = "archive411-v3";
 const PRECACHE_URLS = [
   "/",
   "/intro",
@@ -6,8 +6,6 @@ const PRECACHE_URLS = [
   "/home",
   "/search",
   "/build",
-  "/generate",
-  "/results",
   "/surprise",
   "/independent",
   "/archive",

@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, getRequestSupabase } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
+  const user = await getAuthUser();
+  const supabase = await getRequestSupabase();
   const body = await request.json();
   const id = `app-${Date.now()}`;
 
@@ -36,10 +35,10 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const supabase = await getRequestSupabase();
   const { data, error } = await supabase
     .from("designer_applications")
     .select("*")

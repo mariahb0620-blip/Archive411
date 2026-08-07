@@ -10,8 +10,12 @@ Live walkthrough script for beta approval. Production deploy only after this rev
 - [ ] Email confirmation **disabled** in Supabase Auth
 - [ ] Google OAuth provider **enabled** in Supabase Auth (optional for demo — email works without it)
 - [ ] Preview URL added to Supabase redirect URLs
-- [ ] `npm run catalog:verify` passes locally
-- [ ] `npm run beta:test` passes locally
+- [x] `npm run catalog:verify` passes locally
+- [x] `npm run beta:test` passes locally
+- [x] `npm run beta:rls` passes (two-user isolation)
+- [ ] Redeploy Vercel after API auth fix (see [qa-report.md](./qa-report.md))
+- [ ] `npm run vercel:journey` passes against live URL (after redeploy)
+- [ ] Real phone QA (iPhone Safari / Android Chrome) — Mariah
 
 **Preview deploy:** check latest Vercel deployment for the `main` branch.  
 (Vercel deployment protection may require team login — share inspector link with founder if needed.)
@@ -85,8 +89,7 @@ Live walkthrough script for beta approval. Production deploy only after this rev
 | Product links | Real URLs from verified catalog |
 | Product images | Category PNG placeholders (not authorized SKU photos) |
 | Designer dashboard | Shell — application status + roadmap sections |
-| Quick Generate (`/generate`) | Coming soon — use Build My Look |
-| `/api/generate` | Legacy mock — not primary path |
+| Quick Generate (`/generate`) | Redirects to Build My Look |
 | Affiliate product feeds | URL builder only — no feed ingestion yet |
 
 ## Approval gates
@@ -114,5 +117,17 @@ See [deployment.md](./deployment.md) — promote previous Vercel deployment; dat
 ## Reference
 
 - Catalog verification: `npm run catalog:verify`
+- Full QA report: [qa-report.md](./qa-report.md)
 - Known limitations: [known-issues.md](./known-issues.md)
 - Completion summary: [completion-report.md](./completion-report.md)
+
+## Founder walkthrough — Mariah
+
+**Schedule before any beta invites.** Use this doc as the live script (~20 min).
+
+1. Confirm Vercel redeploy includes latest API auth fix ([qa-report.md](./qa-report.md))
+2. Open https://archive411.vercel.app on desktop + phone
+3. Complete demo flow sections 1–7 above
+4. Check all approval gates
+5. If approved → follow “After approval” section
+6. If not approved → file issues; do **not** invite testers

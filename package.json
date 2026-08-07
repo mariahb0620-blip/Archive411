@@ -17,7 +17,12 @@
     "catalog:verify": "npx tsx scripts/verify-catalog.ts",
     "catalog:seed": "npx tsx scripts/seed-supabase.ts",
     "beta:test": "npx tsx scripts/beta-journey-test.ts",
+    "beta:rls": "npx tsx scripts/beta-rls-test.ts",
+    "vercel:journey": "npx tsx scripts/vercel-journey-test.ts",
     "e2e:test": "playwright test",
+    "e2e:vercel": "playwright test e2e/vercel-journey.spec.ts",
+    "e2e:mobile": "playwright test e2e/vercel-journey.spec.ts --project=iphone-safari --project=android-chrome",
+    "qa:all": "npm run catalog:verify && npm run beta:test && npm run beta:rls",
     "deploy:preview": "vercel deploy",
     "db:migrate": "npx tsx scripts/apply-migration.ts"
   },

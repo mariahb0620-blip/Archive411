@@ -7,7 +7,6 @@ const NAV_LINKS = [
   { href: "/home", label: "Home" },
   { href: "/search", label: "Search" },
   { href: "/build", label: "Build a Look" },
-  { href: "/results", label: "Registry" },
   { href: "/independent", label: "Independent Edit" },
   { href: "/archive", label: "My Archive" },
   { href: "/designers", label: "Designers" },
@@ -44,8 +43,7 @@ export default function AppHeader() {
           {NAV_LINKS.map((link) => {
             const isActive =
               pathname === link.href ||
-              (link.href === "/archive" && pathname.startsWith("/archive")) ||
-              (link.href === "/results" && pathname.startsWith("/results"));
+              (link.href === "/archive" && pathname.startsWith("/archive"));
 
             return (
               <Link

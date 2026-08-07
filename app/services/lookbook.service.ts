@@ -5,18 +5,13 @@ import type {
   Look,
   Lookbook,
   PriceRangeSelection,
+  Product,
   SavedLookbookSession,
   SearchFilters,
   SurpriseConstraints,
 } from "@/app/types/domain";
 import { STORAGE_KEYS } from "@/app/types/domain";
-import {
-  DEFAULT_PRICE_RANGE,
-} from "@/app/data/mockCatalog";
-import {
-  STYLE_DIRECTION_OPTIONS,
-  blendStyleLabel,
-} from "@/app/data/buildQuestionnaire";
+import { DEFAULT_PRICE_RANGE } from "@/app/data/mockCatalog";
 import {
   assembleDiverseLook,
   parseSearchQuery,
@@ -28,7 +23,10 @@ import {
   getVerifiedDesignersSync,
 } from "@/lib/catalog/verifiedPool";
 import { assembleVariedLookbook } from "@/app/services/lookAssembly.service";
-import { shuffleArray, rotateArray } from "@/app/utils/pickRandom";
+import { checkSizeAvailability } from "@/app/utils/sizeAvailability";
+import { coverFromProducts, CATEGORY_PLACEHOLDER, normalizeCoverImageUrl } from "@/app/data/productImagery";
+
+export { checkSizeAvailability };
 
 function id(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -42,197 +40,14 @@ export function formatCurrency(amount: number, currency: CurrencyCode): string {
   }).format(amount);
 }
 
-function styleLabels(answers: BuildLookAnswers): string[] {
-  const fromIds = (answers.styleDirections ?? []).map((sid) => {
-    const found = STYLE_DIRECTION_OPTIONS.find((s) => s.id === sid);
-    return found?.label ?? sid;
-  });
-  const legacy = answers.aesthetics ?? [];
-  if (answers.customStyleDescription?.trim()) {
-    fromIds.push(answers.customStyleDescription.trim());
-  }
-  return fromIds.length ? fromIds : legacy;
-}
-
-function buildBlendExplanation(answers: BuildLookAnswers): string {
-  const styles = styleLabels(answers);
-  const presentation = answers.clothingPresentation ?? [];
-
-  const parts: string[] = [];
-
-  if (styles.length >= 2) {
-    const hasY2K = styles.some((s) => /y2k/i.test(s));
-    const hasOffice = styles.some((s) => /office|business/i.test(s));
-    const hasStreet = styles.some((s) => /street/i.test(s));
-    const hasQuiet = styles.some((s) => /quiet luxury/i.test(s));
-    const hasEvening = styles.some((s) => /evening/i.test(s));
-    const hasVintage = styles.some((s) => /vintage/i.test(s));
-    const hasScandi = styles.some((s) => /scandinavian/i.test(s));
-
-    if (hasY2K && hasOffice) {
-      parts.push("Polished Y2K-inspired work looks that balance nostalgia with office-ready structure.");
-    } else if (presentation.includes("Feminine") && hasStreet) {
-      parts.push("Feminine details paired with streetwear proportions and urban layering.");
-    } else if (presentation.includes("Masculine") && styles.some((s) => /romantic/i.test(s))) {
-      parts.push("Masculine silhouettes softened through fabric, color, and romantic detailing.");
-    } else if (
-      (presentation.includes("Androgynous") || presentation.includes("Gender-neutral")) &&
-      hasEvening
-    ) {
-      parts.push("Occasion looks that avoid strongly gendered styling while staying elevated.");
-    } else if (presentation.includes("Gender-neutral") && hasQuiet) {
-      parts.push("Refined, versatile silhouettes drawn across retailer categories.");
-    } else if (hasVintage && styles.some((s) => /experimental/i.test(s))) {
-      parts.push("Vintage references reinterpreted through experimental proportion and texture.");
-    } else if (hasScandi && presentation.includes("Feminine")) {
-      parts.push("Scandinavian minimal lines with soft feminine proportion and palette.");
-    } else {
-      parts.push(
-        `Intentional blend of ${styles.slice(0, 3).join(", ")}${styles.length > 3 ? " and more" : ""}.`
-      );
-    }
-  } else if (styles.length === 1) {
-    parts.push(`Looks shaped primarily by ${styles[0]}.`);
-  }
-
-  if (presentation.length && !presentation.includes("No preference")) {
-    parts.push(`Presentation: ${presentation.join(", ")}.`);
-  }
-
-  const footwear = answers.footwear;
-  if (footwear?.inclusion === "no") {
-    parts.push("Clothing-only edit — footwear excluded.");
-  } else if (footwear?.types?.length) {
-    parts.push(`Footwear focus: ${footwear.types.join(", ")}.`);
-  }
-
-  return parts.join(" ") || "Built from your style, fit, and presentation preferences.";
-}
-
-function collectSearchSizes(answers: BuildLookAnswers): string[] {
-  const sizes: string[] = [];
-  const cs = answers.clothingSizes;
-  if (cs) {
-    (["tops", "bottoms", "dresses", "outerwear", "bras"] as const).forEach((key) => {
-      if (cs[key] && !(cs.skippedCategories ?? []).includes(key)) {
-        sizes.push(cs[key]!);
-      }
-    });
-  }
-  if (answers.footwear?.shoeSize) sizes.push(answers.footwear.shoeSize);
-  return sizes.length ? sizes : (answers.sizes ?? []);
-}
-
-import { checkSizeAvailability } from "@/app/utils/sizeAvailability";
-import { STYLE_TO_AESTHETIC } from "@/app/data/curatedRoster";
-import { communitySearchAesthetics } from "@/app/data/styleCommunities";
-import { resolveDepartmentFromBuild } from "@/app/utils/presentationMatch";
-import { coverFromProducts, CATEGORY_PLACEHOLDER, normalizeCoverImageUrl } from "@/app/data/productImagery";
-
-export { checkSizeAvailability };
-
-function styleAestheticTags(answers: BuildLookAnswers): string[] {
-  const fromStyles = (answers.styleDirections ?? []).flatMap(
-    (sid) => STYLE_TO_AESTHETIC[sid] ?? []
-  );
-  const fromCommunities = answers.fashionCommunities?.length
-    ? communitySearchAesthetics(answers.fashionCommunities)
-    : [];
-  return [...styleLabels(answers), ...fromStyles, ...fromCommunities];
-}
-
 function buildLooksFromProducts(
-  candidates: import("@/app/types/domain").Product[],
+  candidates: Product[],
   lookbookId: string,
   matchExplanation: string,
   stylingNote?: string
 ): Look[] {
   if (!candidates.length) return [];
-
-  const varied = assembleVariedLookbook(candidates, lookbookId, matchExplanation, stylingNote);
-  if (varied.length) return varied;
-
-  return [];
-}
-
-function mergeCandidatePool(
-  assembled: import("@/app/services/catalog.service").AssembledLook,
-  ranked: import("@/app/types/domain").Product[]
-): import("@/app/types/domain").Product[] {
-  const seen = new Set<string>();
-  const merged: import("@/app/types/domain").Product[] = [];
-  for (const p of [...assembled.products, ...ranked]) {
-    if (seen.has(p.id)) continue;
-    seen.add(p.id);
-    merged.push(p);
-  }
-  return merged;
-}
-
-export function generateLookbookFromBuild(
-  answers: BuildLookAnswers
-): { lookbook: Lookbook; looks: Look[] } {
-  const labels = styleLabels(answers);
-  const blendTitle = blendStyleLabel(
-    answers.styleDirections ?? [],
-    answers.customStyleDescription
-  );
-  const location = answers.location ?? "Global";
-  const searchSizes = collectSearchSizes(answers);
-  const independent = answers.independentDesigners === true;
-  const presentations = answers.clothingPresentation;
-  const department = resolveDepartmentFromBuild(answers);
-
-  const blendNote = buildBlendExplanation(answers);
-  const aestheticTags = styleAestheticTags(answers);
-
-  const searchFilters = {
-    aesthetics: aestheticTags,
-    fashionCommunities: answers.fashionCommunities,
-    coverageLevel: answers.coverageLevel,
-    kawaiiIntensity: answers.kawaiiIntensity,
-    city: location,
-    climate: answers.climate,
-    priceRange: answers.priceRange ?? DEFAULT_PRICE_RANGE,
-    sizes: searchSizes,
-    independentOnly: independent,
-    department,
-  } as const;
-
-  const pool = getVerifiedProductsSync();
-  const assembled = assembleDiverseLook(searchFilters, answers, pool);
-  const ranked = searchCatalog(searchFilters, presentations, pool);
-  const candidates = rotateArray(shuffleArray(mergeCandidatePool(assembled, ranked)));
-
-  const lookbook: Lookbook = {
-    id: id("lb"),
-    title: `${location} · ${blendTitle}`,
-    description: `${blendNote} Verified catalog — limited beta inventory.`,
-    coverImageUrl: CATEGORY_PLACEHOLDER.default,
-    generatedAt: new Date().toISOString(),
-    occasion: answers.dressingFor,
-    climate: answers.climate,
-    location,
-    priceRange: answers.priceRange ?? DEFAULT_PRICE_RANGE,
-    aestheticTags: labels.map((l) => l.toLowerCase().replace(/\s+/g, "-")),
-    visibility: "private",
-    generationMethod: "build",
-    saved: false,
-    collectionIds: [],
-    buildPreferences: answers,
-  };
-
-  const looks = buildLooksFromProducts(
-    candidates,
-    lookbook.id,
-    `${blendNote} ${assembled.explanation}`,
-    `Silhouettes selected for ${answers.clothingPresentation?.join(" and ") ?? "your"} presentation preference.${independent ? " Independent designers prioritized." : ""}${searchSizes.length ? ` Sized for: ${searchSizes.join(", ")}.` : ""}`
-  );
-
-  const allProductIds = looks.flatMap((l) => l.productIds ?? []);
-  lookbook.coverImageUrl = coverFromProducts(allProductIds, pool);
-
-  return { lookbook, looks };
+  return assembleVariedLookbook(candidates, lookbookId, matchExplanation, stylingNote);
 }
 
 export function generateLookbookFromSearch(

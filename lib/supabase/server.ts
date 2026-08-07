@@ -1,5 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 import { cookies, headers } from "next/headers";
 
 export async function createClient() {
@@ -25,6 +25,23 @@ export async function createClient() {
       },
     }
   );
+}
+
+/** Cookie session, or Bearer JWT when present (API clients / tests). */
+export async function getRequestSupabase(): Promise<SupabaseClient> {
+  const headerStore = await headers();
+  const authHeader = headerStore.get("authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.slice(7);
+    return createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+      }
+    );
+  }
+  return createClient();
 }
 
 export async function getAuthUser() {
