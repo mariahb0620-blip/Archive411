@@ -73,6 +73,7 @@ function HomeContent() {
                 href={mode.href}
                 title={mode.title}
                 description={mode.description}
+                imageUrl={mode.imageUrl}
                 index={index}
               />
             ))}

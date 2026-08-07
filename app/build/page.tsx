@@ -10,7 +10,6 @@ import StepIndicator from "@/app/components/StepIndicator";
 import StickyActionBar from "@/app/components/StickyActionBar";
 import RouteGuard from "@/app/components/RouteGuard";
 import {
-  StyleInspirationStep,
   ClothingSizesStep,
   ContextBriefStep,
   FootwearInclusionStep,
@@ -18,7 +17,8 @@ import {
   STEP_PROMPTS,
   StyleDirectionStep,
 } from "@/app/components/build/BuildQuestionSteps";
-import { getBuildSteps, type BuildStepId } from "@/app/data/buildQuestionnaire";
+import { getBuildSteps, canAdvanceFromStep, type BuildStepId } from "@/app/data/buildQuestionnaire";
+import PreferenceTagsBar from "@/app/components/build/PreferenceTagsBar";
 import { storeLookbookSession } from "@/app/services/lookbook.service";
 import { fetchBuildRecommendation } from "@/app/services/archive.api";
 import type { BuildLookAnswers } from "@/app/types/domain";
@@ -48,6 +48,20 @@ function BuildContent() {
   const stepId = steps[stepIndex];
   const total = steps.length;
   const prompt = STEP_PROMPTS[stepId];
+  const canAdvance = canAdvanceFromStep(stepId, answers);
+  const [loadingPhase, setLoadingPhase] = useState(0);
+
+  useEffect(() => {
+    if (!loading) {
+      setLoadingPhase(0);
+      return;
+    }
+    const timers = [
+      setTimeout(() => setLoadingPhase(1), 1200),
+      setTimeout(() => setLoadingPhase(2), 2800),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, [loading]);
 
   useEffect(() => {
     const target = searchParams.get("step") as BuildStepId | null;
@@ -86,8 +100,6 @@ function BuildContent() {
     switch (stepId) {
       case "styleDirections":
         return <StyleDirectionStep answers={answers} onChange={patchAnswers} />;
-      case "styleInspiration":
-        return <StyleInspirationStep answers={answers} onChange={patchAnswers} />;
       case "clothingPresentation":
         return <PresentationStep answers={answers} onChange={patchAnswers} />;
       case "clothingSizes":
@@ -113,16 +125,19 @@ function BuildContent() {
         <div className="flex flex-1 flex-col py-6 md:items-center md:justify-center md:py-12">
           {loading ? (
             <div className="flex flex-1 flex-col items-center justify-center text-center">
+              <PreferenceTagsBar answers={answers} />
               <motion.div
                 animate={{ opacity: [0.4, 1, 0.4] }}
                 transition={{ duration: 1.6, repeat: Infinity }}
-                className="h-10 w-10 rounded-full border-2 border-accent/30 border-t-accent"
+                className="mt-8 h-10 w-10 rounded-full border-2 border-accent/30 border-t-accent"
               />
               <p className="mt-6 text-[10px] uppercase tracking-[0.4em] text-muted">
                 Building your lookbook...
               </p>
               <p className="mt-3 max-w-xs text-sm text-muted">
-                Matching verified catalog pieces to your preferences.
+                {loadingPhase === 0 && "Filtering verified catalog by your style and size…"}
+                {loadingPhase === 1 && "Assembling outfit edits…"}
+                {loadingPhase >= 2 && "Finalizing your personalized lookbook…"}
               </p>
             </div>
           ) : (
@@ -165,12 +180,13 @@ function BuildContent() {
           {stepIndex < total - 1 ? (
             <EditorialButton
               className="flex-1 md:flex-none"
+              disabled={!canAdvance}
               onClick={() => setStepIndex((s) => s + 1)}
             >
               Continue
             </EditorialButton>
           ) : (
-            <EditorialButton className="flex-1 md:flex-none" onClick={finish}>
+            <EditorialButton className="flex-1 md:flex-none" disabled={!canAdvance} onClick={finish}>
               Generate lookbook
             </EditorialButton>
           )}

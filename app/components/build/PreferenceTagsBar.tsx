@@ -159,7 +159,7 @@ export default function PreferenceTagsBar({
             {tag.editStep && !onRemove && (
               <Link
                 href={`/build?step=${tag.editStep}`}
-                className="text-[10px] uppercase tracking-[0.1em] text-accent opacity-0 transition-opacity group-hover:opacity-100"
+                className="text-[10px] uppercase tracking-[0.1em] text-accent opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100"
               >
                 Edit
               </Link>

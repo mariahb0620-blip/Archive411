@@ -1,4 +1,6 @@
 /** Style direction options — aesthetics and occasion dimensions can combine freely. */
+import type { BuildLookAnswers } from "@/app/types/domain";
+
 export const STYLE_DIRECTION_OPTIONS = [
   { id: "y2k", label: "Y2K", category: "aesthetic" as const },
   { id: "1990s-minimalism", label: "1990s minimalism", category: "aesthetic" as const },
@@ -218,7 +220,6 @@ export const CONTEXT_STEPS = [
 
 export type BuildStepId =
   | "styleDirections"
-  | "styleInspiration"
   | "clothingPresentation"
   | "clothingSizes"
   | "contextBrief"
@@ -246,12 +247,34 @@ export function getBuildSteps(_answers?: { // eslint-disable-line @typescript-es
 }): BuildStepId[] {
   return [
     "styleDirections",
-    "styleInspiration",
     "clothingPresentation",
     "clothingSizes",
     "contextBrief",
     "footwearInclusion",
   ];
+}
+
+export function canAdvanceFromStep(
+  stepId: BuildStepId,
+  answers: BuildLookAnswers
+): boolean {
+  switch (stepId) {
+    case "styleDirections":
+      return (
+        (answers.styleDirections?.length ?? 0) > 0 ||
+        Boolean(answers.customStyleDescription?.trim())
+      );
+    case "clothingPresentation":
+      return (answers.clothingPresentation?.length ?? 0) > 0;
+    case "clothingSizes":
+      return true;
+    case "contextBrief":
+      return Boolean(answers.dressingFor && answers.location && answers.climate);
+    case "footwearInclusion":
+      return Boolean(answers.footwear?.inclusion);
+    default:
+      return true;
+  }
 }
 
 export { COVERAGE_MAP, KAWAII_MAP };

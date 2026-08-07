@@ -4,7 +4,6 @@
 import type { BuildLookAnswers, Look, Lookbook, Product } from "@/app/types/domain";
 import {
   DEFAULT_PRICE_RANGE,
-  MOCK_DISCLAIMER,
 } from "@/app/data/mockCatalog";
 import {
   STYLE_DIRECTION_OPTIONS,
@@ -66,11 +65,12 @@ function buildLooksFromProducts(
   candidates: Product[],
   lookbookId: string,
   matchExplanation: string,
-  stylingNote?: string
+  stylingNote?: string,
+  options?: { styleBlend?: string; dressingFor?: string }
 ): Look[] {
   if (!candidates.length) return [];
 
-  const varied = assembleVariedLookbook(candidates, lookbookId, matchExplanation, stylingNote);
+  const varied = assembleVariedLookbook(candidates, lookbookId, matchExplanation, stylingNote, options);
   if (varied.length) return varied;
 
   return [];
@@ -129,9 +129,12 @@ export function generateLookbookFromBuildForPool(
   const candidates = rotateArray(shuffleArray(mergeCandidatePool(assembled, ranked)));
 
   const lookbookId = id("lb");
-  const matchExplanation = `Matched from verified catalog based on ${blendTitle}. ${MOCK_DISCLAIMER}`;
+  const matchExplanation = `Curated for your ${blendTitle} preferences.`;
 
-  const looks = buildLooksFromProducts(candidates, lookbookId, matchExplanation);
+  const looks = buildLooksFromProducts(candidates, lookbookId, matchExplanation, undefined, {
+    styleBlend: blendTitle,
+    dressingFor: answers.dressingFor,
+  });
 
   const lookbook: Lookbook = {
     id: lookbookId,

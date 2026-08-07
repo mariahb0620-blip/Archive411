@@ -3,14 +3,53 @@ import {
   LOOK_INTERPRETATIONS,
   MIXED_STYLING_NOTES,
 } from "@/app/data/styleUniverse";
-import {
-  convertToCurrency,
-  getProductSourceName,
-} from "@/app/services/catalog.service";
+import { convertToCurrency } from "@/app/services/catalog.service";
+import { productImage } from "@/app/data/catalogImages";
 import { pickRandom, rotateArray, shuffleArray } from "@/app/utils/pickRandom";
 
 function id(prefix: string) {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+export interface AssembleLookbookOptions {
+  styleBlend?: string;
+  dressingFor?: string;
+}
+
+function orderInterpretations(dressingFor?: string) {
+  const specs = [...LOOK_INTERPRETATIONS];
+  const promote = (lookId: string) => {
+    const idx = specs.findIndex((s) => s.id === lookId);
+    if (idx > 0) {
+      const [item] = specs.splice(idx, 1);
+      specs.unshift(item);
+    }
+  };
+
+  const occasion = dressingFor?.toLowerCase() ?? "";
+  if (occasion.includes("date") || occasion.includes("night")) {
+    promote("nightlife");
+  } else if (occasion.includes("work") || occasion.includes("everyday")) {
+    promote("everyday");
+    promote("polished");
+  } else if (occasion.includes("event")) {
+    promote("polished");
+    promote("nightlife");
+  }
+
+  return specs;
+}
+
+function personalizedTitle(specTitle: string, styleBlend?: string): string {
+  if (!styleBlend || styleBlend === "Editorial mix") return specTitle;
+  return `${styleBlend} · ${specTitle}`;
+}
+
+function paletteFromProducts(products: Product[]): string[] {
+  return products
+    .slice(0, 5)
+    .map((p) => p.imageUrls[0] ?? productImage(p.category))
+    .filter(Boolean);
 }
 
 function productMatchesTags(product: Product, tags: readonly string[]): boolean {
@@ -136,7 +175,8 @@ export function assembleVariedLookbook(
   candidates: Product[],
   lookbookId: string,
   matchExplanation: string,
-  stylingNote?: string
+  stylingNote?: string,
+  options?: AssembleLookbookOptions
 ): Look[] {
   if (!candidates.length) return [];
 
@@ -144,8 +184,9 @@ export function assembleVariedLookbook(
   const usedProductIds = new Set<string>();
   const usedDesignerIds = new Set<string>();
   const looks: Look[] = [];
+  const interpretations = orderInterpretations(options?.dressingFor);
 
-  LOOK_INTERPRETATIONS.forEach((spec, index) => {
+  interpretations.forEach((spec, index) => {
     const products = pickForLook(
       rotatedCandidates,
       spec,
@@ -157,12 +198,10 @@ export function assembleVariedLookbook(
 
     products.forEach((p) => usedProductIds.add(p.id));
 
-    const sources = [...new Set(products.map(getProductSourceName))];
     const totalUsd = products.reduce(
       (sum, p) => sum + convertToCurrency(p.price, p.currency, "USD"),
       0
     );
-    const cities = [...new Set(products.map((p) => p.designerCity ?? p.retailerCity).filter(Boolean))];
 
     const mixedNote =
       spec.id === "unexpected"
@@ -172,11 +211,11 @@ export function assembleVariedLookbook(
     looks.push({
       id: id("look"),
       lookbookId,
-      title: spec.title,
-      explanation: `${spec.description} Sources include ${sources.slice(0, 4).join(", ")}${sources.length > 4 ? " and more" : ""}.${cities.length ? ` Cities: ${cities.slice(0, 3).join(", ")}.` : ""}`,
+      title: personalizedTitle(spec.title, options?.styleBlend),
+      explanation: spec.description,
       totalEstimatedPrice: totalUsd,
       currency: products[0]?.currency ?? "USD",
-      colorPalette: ["#1a1a1a", "#888888", "#c9b896"],
+      colorPalette: paletteFromProducts(products),
       silhouetteTags: products.flatMap((p) => p.aestheticTags).slice(0, 4),
       occasionTags: products.flatMap((p) => p.occasionTags).slice(0, 4),
       stylingExplanation:

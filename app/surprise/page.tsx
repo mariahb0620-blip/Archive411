@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import AppHeader from "@/app/components/AppHeader";
+import AppImage from "@/app/components/AppImage";
 import EditorialButton from "@/app/components/EditorialButton";
 import AppPageMain from "@/app/components/AppPageMain";
 import RouteGuard from "@/app/components/RouteGuard";
 import { DEFAULT_PRICE_RANGE } from "@/app/data/mockCatalog";
+import { productImage } from "@/app/data/catalogImages";
 import {
   generateSurpriseLookbook,
   storeLookbookSession,
 } from "@/app/services/lookbook.service";
+import { getVerifiedProductsSync } from "@/lib/catalog/verifiedPool";
 import type { SurpriseConstraints } from "@/app/types/domain";
 import { useApp } from "@/app/context/AppContext";
 
@@ -24,6 +27,15 @@ function SurpriseContent() {
   const [result, setResult] = useState<ReturnType<
     typeof generateSurpriseLookbook
   > | null>(null);
+
+  const previewProducts = useMemo(() => {
+    if (!result?.looks[0]) return [];
+    const pool = getVerifiedProductsSync();
+    return result.looks[0].productIds
+      .slice(0, 3)
+      .map((id) => pool.find((p) => p.id === id))
+      .filter(Boolean);
+  }, [result]);
 
   const generate = () => {
     setResult(generateSurpriseLookbook(constraints));
@@ -87,23 +99,52 @@ function SurpriseContent() {
             <EditorialButton onClick={generate}>Surprise me</EditorialButton>
           </div>
         ) : (
-          <div className="mt-10 max-w-2xl border border-smoke/50 bg-charcoal p-8">
-            <h2 className="font-display text-3xl text-ivory">
-              {result.lookbook.title}
-            </h2>
-            <p className="mt-4 text-sm leading-relaxed text-muted">
-              {result.aestheticExplanation}
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <EditorialButton onClick={generate}>Try another</EditorialButton>
-              <EditorialButton variant="ghost" onClick={openLookbook}>
-                View lookbook
-              </EditorialButton>
-              {!user?.isGuest && (
-                <EditorialButton variant="ghost" onClick={save}>
-                  Save to My Archive
-                </EditorialButton>
+          <div className="mt-10 max-w-2xl overflow-hidden border border-smoke/50 bg-charcoal">
+            <div className="relative aspect-[16/9] w-full">
+              <AppImage
+                src={result.lookbook.coverImageUrl}
+                alt={result.lookbook.title}
+                fill
+                className="object-cover"
+                sizes="640px"
+              />
+            </div>
+            <div className="p-8">
+              <h2 className="font-display text-3xl text-ivory">
+                {result.lookbook.title}
+              </h2>
+              <p className="mt-4 text-sm leading-relaxed text-muted">
+                {result.aestheticExplanation}
+              </p>
+              {previewProducts.length > 0 && (
+                <div className="mt-6 flex gap-2">
+                  {previewProducts.map((product) => (
+                    <div
+                      key={product!.id}
+                      className="relative h-20 w-16 overflow-hidden rounded border border-smoke/40"
+                    >
+                      <AppImage
+                        src={product!.imageUrls[0] ?? productImage(product!.category)}
+                        alt={product!.name}
+                        fill
+                        className="object-cover"
+                        sizes="64px"
+                      />
+                    </div>
+                  ))}
+                </div>
               )}
+              <div className="mt-8 flex flex-wrap gap-3">
+                <EditorialButton onClick={generate}>Try another</EditorialButton>
+                <EditorialButton variant="ghost" onClick={openLookbook}>
+                  View lookbook
+                </EditorialButton>
+                {!user?.isGuest && (
+                  <EditorialButton variant="ghost" onClick={save}>
+                    Save to My Archive
+                  </EditorialButton>
+                )}
+              </div>
             </div>
           </div>
         )}

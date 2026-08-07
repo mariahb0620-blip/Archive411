@@ -86,7 +86,10 @@ export async function searchLookbookRecommendation(
     };
   }
 
-  const looks = assembleVariedLookbook(candidates, lookbook.id, assembled.explanation);
+  const looks = assembleVariedLookbook(candidates, lookbook.id, assembled.explanation, undefined, {
+    styleBlend: filters.query?.slice(0, 48) ?? "Search Results",
+    dressingFor: filters.occasion,
+  });
   const usedIds = new Set(looks.flatMap((l) => l.productIds ?? []));
   const usedProducts = products.filter((p) => usedIds.has(p.id));
 

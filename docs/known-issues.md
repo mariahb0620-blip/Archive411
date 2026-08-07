@@ -14,7 +14,9 @@
 - Search/Surprise/Independent now use verified catalog pool (no MOCK_PRODUCTS default).
 - Google OAuth wired — enable provider in Supabase Dashboard.
 - Collections, saved designers, fitting lists APIs added (migration 002 required).
-- Style inspiration opt-in step in Build questionnaire.
+- Style inspiration step removed from Build questionnaire (premature for beta).
+- Lookbook results show outfit-first grids with personalized edit titles and styling copy.
+- Build questionnaire validates required inputs before Continue/Generate.
 
 ## Technical debt
 

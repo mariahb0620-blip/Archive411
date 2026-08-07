@@ -3,17 +3,19 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import AppImage from "@/app/components/AppImage";
 import { INTRO_SLIDES } from "@/app/data/mockCatalog";
+import { CATEGORY_IMAGES } from "@/app/data/catalogImages";
 import { useApp } from "@/app/context/AppContext";
 import { EDITORIAL_EASE } from "@/app/lib/motion";
 
-const PANEL_TONES = [
-  "bg-[#1a1a1a]",
-  "bg-[#222222]",
-  "bg-[#181818]",
-  "bg-[#242424]",
-  "bg-[#1c1c1c]",
-  "bg-[#202020]",
+const INTRO_PANEL_IMAGES = [
+  CATEGORY_IMAGES.dresses,
+  CATEGORY_IMAGES.outerwear,
+  CATEGORY_IMAGES.shoes,
+  CATEGORY_IMAGES.handbags,
+  CATEGORY_IMAGES.tops,
+  CATEGORY_IMAGES.jewelry,
 ];
 
 export default function IntroPage() {
@@ -36,14 +38,10 @@ export default function IntroPage() {
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col bg-ink" style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
-      <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-1 opacity-40 md:grid-cols-6">
-        {PANEL_TONES.map((tone, i) => (
-          <div
-            key={i}
-            className={`relative overflow-hidden border border-smoke/20 ${tone}`}
-          >
-            <div className="absolute inset-x-4 bottom-4 h-px bg-smoke/40" />
-            <div className="absolute left-4 top-1/3 h-px w-1/2 bg-accent/30" />
+      <div className="absolute inset-0 grid grid-cols-3 grid-rows-2 gap-1 opacity-30 md:grid-cols-6">
+        {INTRO_PANEL_IMAGES.map((src, i) => (
+          <div key={i} className="relative overflow-hidden border border-smoke/20">
+            <AppImage src={src} alt="" fill className="object-cover" sizes="20vw" />
           </div>
         ))}
       </div>
@@ -72,12 +70,16 @@ export default function IntroPage() {
 
             {slide === 1 && (
               <div className="mt-8 grid grid-cols-3 gap-2">
-                {[1, 2, 3].map((n) => (
-                  <div
-                    key={n}
-                    className="aspect-[3/4] border border-smoke/50 bg-charcoal/80"
-                  />
-                ))}
+                {[CATEGORY_IMAGES.dresses, CATEGORY_IMAGES.outerwear, CATEGORY_IMAGES.shoes].map(
+                  (src) => (
+                    <div
+                      key={src}
+                      className="relative aspect-[3/4] overflow-hidden border border-smoke/50"
+                    >
+                      <AppImage src={src} alt="" fill className="object-cover" sizes="33vw" />
+                    </div>
+                  )
+                )}
               </div>
             )}
           </motion.div>

@@ -7,6 +7,7 @@ import AppPageMain from "@/app/components/AppPageMain";
 import EditorialButton from "@/app/components/EditorialButton";
 import RouteGuard from "@/app/components/RouteGuard";
 import StickyActionBar from "@/app/components/StickyActionBar";
+import { SelectChip } from "@/app/components/build/BuildQuestionSteps";
 import { AESTHETIC_TAGS, DEPARTMENT_OPTIONS } from "@/app/data/aestheticTags";
 import { FASHION_CITIES } from "@/app/data/fashionCities";
 import { DEFAULT_PRICE_RANGE, PRICE_TIER_LABELS } from "@/app/data/mockCatalog";
@@ -15,6 +16,15 @@ import { storeLookbookSession } from "@/app/services/lookbook.service";
 import type { DepartmentFilter, PriceRangeSelection } from "@/app/types/domain";
 
 const OCCASIONS = ["Work", "Date night", "Travel", "Event", "Everyday", "Nightlife", "Vacation"];
+
+const EXAMPLE_QUERIES = [
+  "Y2K going-out look in NYC",
+  "Quiet luxury workwear",
+  "Independent streetwear under $250",
+  "Parisian date night with heels",
+];
+
+const FEATURED_AESTHETICS = AESTHETIC_TAGS.slice(0, 12);
 
 function SearchContent() {
   const router = useRouter();
@@ -85,13 +95,37 @@ function SearchContent() {
             />
           </label>
 
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-muted">Try an example</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {EXAMPLE_QUERIES.map((example) => (
+                <SelectChip
+                  key={example}
+                  label={example}
+                  selected={query === example}
+                  onClick={() => setQuery(example)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <fieldset>
+            <legend className="text-[10px] uppercase tracking-[0.2em] text-muted">
+              Aesthetic
+            </legend>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {FEATURED_AESTHETICS.map((tag) => (
+                <SelectChip
+                  key={tag}
+                  label={tag}
+                  selected={aesthetic === tag}
+                  onClick={() => setAesthetic(aesthetic === tag ? "" : tag)}
+                />
+              ))}
+            </div>
+          </fieldset>
+
           <div className="grid gap-4 sm:grid-cols-2">
-            <FilterSelect
-              label="Aesthetic"
-              value={aesthetic}
-              onChange={setAesthetic}
-              options={[...AESTHETIC_TAGS]}
-            />
             <FilterSelect
               label="Occasion"
               value={occasion}

@@ -43,8 +43,6 @@ export async function completeBuildFlow(page: Page) {
   await page.getByRole("button", { name: "Hot-Girl Y2K" }).click();
   await page.getByRole("button", { name: "Continue" }).click();
 
-  await page.getByRole("button", { name: "Continue" }).click();
-
   await page.getByRole("button", { name: "Feminine" }).click();
   await page.getByRole("button", { name: "Continue" }).click();
 

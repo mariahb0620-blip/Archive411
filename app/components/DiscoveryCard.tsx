@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import AppImage from "@/app/components/AppImage";
 import { EDITORIAL_EASE } from "@/app/lib/motion";
 
 interface DiscoveryCardProps {
@@ -9,6 +10,7 @@ interface DiscoveryCardProps {
   title: string;
   description: string;
   index: number;
+  imageUrl?: string;
 }
 
 export default function DiscoveryCard({
@@ -16,6 +18,7 @@ export default function DiscoveryCard({
   title,
   description,
   index,
+  imageUrl,
 }: DiscoveryCardProps) {
   return (
     <motion.div
@@ -25,8 +28,19 @@ export default function DiscoveryCard({
     >
       <Link
         href={href}
-        className="group mobile-card flex items-start justify-between gap-4 p-5 transition-colors active:scale-[0.98] active:bg-smoke/20 md:rounded-none md:p-8 md:active:scale-100"
+        className="group mobile-card flex items-start gap-4 p-5 transition-colors active:scale-[0.98] active:bg-smoke/20 md:rounded-none md:p-8 md:active:scale-100"
       >
+        {imageUrl && (
+          <div className="relative hidden h-24 w-16 shrink-0 overflow-hidden rounded-md border border-smoke/40 sm:block md:h-28 md:w-20">
+            <AppImage
+              src={imageUrl}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="80px"
+            />
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <p className="text-[10px] uppercase tracking-[0.3em] text-muted md:block">
             {String(index + 1).padStart(2, "0")}

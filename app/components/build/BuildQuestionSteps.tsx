@@ -15,10 +15,9 @@ import {
 } from "@/app/data/buildQuestionnaire";
 import { DEFAULT_PRICE_RANGE, PRICE_TIER_LABELS } from "@/app/data/mockCatalog";
 import { STYLE_COMMUNITIES } from "@/app/data/styleCommunities";
-import { STYLE_INSPIRATION_OPTIONS } from "@/app/data/styleInspiration";
 import type { BuildLookAnswers } from "@/app/types/domain";
 
-function SelectChip({
+export function SelectChip({
   label,
   selected,
   onClick,
@@ -781,52 +780,9 @@ export function ContextBriefStep({
   );
 }
 
-export function StyleInspirationStep({
-  answers,
-  onChange,
-}: {
-  answers: BuildLookAnswers;
-  onChange: (patch: Partial<BuildLookAnswers>) => void;
-}) {
-  const selected = answers.styleInspirations ?? [];
-
-  const toggle = (id: string) => {
-    const next = selected.includes(id)
-      ? selected.filter((s) => s !== id)
-      : [...selected, id];
-    onChange({ styleInspirations: next });
-  };
-
-  return (
-    <div className="space-y-3">
-      <p className="text-sm text-muted">
-        Optional — pick style directions that resonate. Never inferred from how you look.
-      </p>
-      <div className="grid gap-2 sm:grid-cols-2">
-        {STYLE_INSPIRATION_OPTIONS.map((opt) => (
-          <button
-            key={opt.id}
-            type="button"
-            onClick={() => toggle(opt.id)}
-            className={`rounded-xl border p-4 text-left transition-colors active:scale-[0.98] ${
-              selected.includes(opt.id)
-                ? "border-accent bg-accent/10"
-                : "border-smoke/50 hover:border-smoke"
-            }`}
-          >
-            <span className="text-sm font-medium text-ivory">{opt.label}</span>
-            <p className="mt-1 text-xs text-muted">{opt.description}</p>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export const STEP_PROMPTS: Record<BuildStepId, string> = {
   styleDirections: "What styles should shape this look?",
-  styleInspiration: "Any inspiration directions? (optional)",
-  clothingPresentation: "How would you like the clothing to be presented?",
+  clothingPresentation: "Which do you prefer?",
   clothingSizes: "What sizes should we search for?",
   contextBrief: "Set the scene for your lookbook",
   footwearInclusion: "Would you like shoes included in this lookbook?",

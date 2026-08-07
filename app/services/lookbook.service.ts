@@ -18,6 +18,7 @@ import {
   rankCatalogProducts,
   searchCatalog,
 } from "@/app/services/catalog.service";
+import type { AssembleLookbookOptions } from "@/app/services/lookAssembly.service";
 import {
   getVerifiedProductsSync,
   getVerifiedDesignersSync,
@@ -44,10 +45,11 @@ function buildLooksFromProducts(
   candidates: Product[],
   lookbookId: string,
   matchExplanation: string,
-  stylingNote?: string
+  stylingNote?: string,
+  options?: AssembleLookbookOptions
 ): Look[] {
   if (!candidates.length) return [];
-  return assembleVariedLookbook(candidates, lookbookId, matchExplanation, stylingNote);
+  return assembleVariedLookbook(candidates, lookbookId, matchExplanation, stylingNote, options);
 }
 
 export function generateLookbookFromSearch(
@@ -77,7 +79,9 @@ export function generateLookbookFromSearch(
     collectionIds: [],
   };
 
-  const looks = buildLooksFromProducts(candidates, lookbook.id, assembled.explanation);
+  const looks = buildLooksFromProducts(candidates, lookbook.id, assembled.explanation, undefined, {
+    styleBlend: "Editorial mix",
+  });
   lookbook.coverImageUrl = coverFromProducts(
     looks.flatMap((l) => l.productIds ?? []),
     pool
@@ -109,7 +113,6 @@ export function generateSurpriseLookbook(
     priceRange: constraints.priceRange ?? DEFAULT_PRICE_RANGE,
     climate: constraints.climate,
   };
-  const assembled = assembleDiverseLook(surpriseFilters, undefined, pool);
   const candidates = searchCatalog(surpriseFilters, undefined, pool);
 
   const aestheticExplanation = `${picked} may appeal to you because it balances ${constraints.adventurousness && constraints.adventurousness > 60 ? "experimental proportion" : "wearable structure"} with your selected occasion and climate.`;
@@ -133,7 +136,9 @@ export function generateSurpriseLookbook(
   const looks = buildLooksFromProducts(
     candidates,
     lookbook.id,
-    `${aestheticExplanation} ${assembled.explanation}`
+    aestheticExplanation,
+    undefined,
+    { styleBlend: picked, dressingFor: constraints.occasion }
   );
   lookbook.coverImageUrl = coverFromProducts(
     looks.flatMap((l) => l.productIds ?? []),
@@ -184,7 +189,9 @@ export function generateIndependentLookbook(
     looks: buildLooksFromProducts(
       candidates.length ? candidates : searchCatalog(independentFilters, undefined, pool),
       lookbook.id,
-      `Independent edit featuring ${designers.map((d) => d.labelName).join(", ")}. ${assembled.explanation}`
+      `Independent edit featuring ${designers.map((d) => d.labelName).join(", ")}. ${assembled.explanation}`,
+      undefined,
+      { styleBlend: "Independent Edit" }
     ),
   };
 }
@@ -201,14 +208,21 @@ export function getFeaturedDesigners() {
   return getVerifiedDesignersSync().filter((d) => d.featured);
 }
 
+export function productsForLooks(looks: Look[]): Product[] {
+  const pool = getVerifiedProductsSync();
+  const ids = new Set(looks.flatMap((l) => l.productIds));
+  return pool.filter((p) => ids.has(p.id));
+}
+
 export function storeLookbookSession(
   lookbook: Lookbook,
   looks: Look[],
   method: GenerationMethod,
   buildPreferences?: BuildLookAnswers,
-  products?: import("@/app/types/domain").Product[]
+  products?: Product[]
 ) {
   if (typeof window === "undefined") return;
+  const resolvedProducts = products ?? productsForLooks(looks);
   sessionStorage.setItem(
     "archive411-current-lookbook",
     JSON.stringify({
@@ -218,7 +232,7 @@ export function storeLookbookSession(
       looks,
       method,
       buildPreferences,
-      products,
+      products: resolvedProducts,
     })
   );
 }

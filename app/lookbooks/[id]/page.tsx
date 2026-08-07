@@ -2,25 +2,22 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import AppImage from "@/app/components/AppImage";
 import Link from "next/link";
+import AppImage from "@/app/components/AppImage";
 import AppHeader from "@/app/components/AppHeader";
 import AppPageMain from "@/app/components/AppPageMain";
 import EditorialButton from "@/app/components/EditorialButton";
 import StickyActionBar from "@/app/components/StickyActionBar";
 import EmptyState from "@/app/components/EmptyState";
+import LookbookSkeleton from "@/app/components/LookbookSkeleton";
+import LookOutfitSection from "@/app/components/lookbook/LookOutfitSection";
 import PreferenceTagsBar from "@/app/components/build/PreferenceTagsBar";
 import RouteGuard from "@/app/components/RouteGuard";
 import {
-  checkSizeAvailability,
-  formatCurrency,
   readLookbookSession,
   readPersistedLookbook,
 } from "@/app/services/lookbook.service";
-import { BETA_DESIGNERS } from "@/app/data/betaCatalog";
-import { productImage } from "@/app/data/catalogImages";
 import { fetchLookbookById, replaceProduct } from "@/app/services/archive.api";
-import ProductSourceActions from "@/app/components/showroom/ProductSourceActions";
 import type { BuildLookAnswers, GenerationMethod, Look, Lookbook, Product } from "@/app/types/domain";
 import { useApp } from "@/app/context/AppContext";
 
@@ -101,12 +98,14 @@ function LookbookContent() {
     load();
   }, [params.id]);
 
-  const resolveProducts = useCallback((): Product[] => {
-    const ids = looks.flatMap((l) => l.productIds);
-    return ids
-      .map((pid) => catalogProducts.find((p) => p.id === pid))
-      .filter(Boolean) as Product[];
-  }, [looks, catalogProducts]);
+  const resolveLookProducts = useCallback(
+    (look: Look): Product[] => {
+      return (look.productIds ?? [])
+        .map((pid) => catalogProducts.find((p) => p.id === pid))
+        .filter(Boolean) as Product[];
+    },
+    [catalogProducts]
+  );
 
   const handleReplaceItem = async (lookId: string, productId: string, category: string) => {
     setReplacing(productId);
@@ -139,8 +138,11 @@ function LookbookContent() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-ink">
-        <p className="text-[10px] uppercase tracking-[0.4em] text-muted">Loading lookbook...</p>
+      <div className="min-h-screen bg-ink">
+        <AppHeader />
+        <AppPageMain className="pt-6">
+          <LookbookSkeleton />
+        </AppPageMain>
       </div>
     );
   }
@@ -162,7 +164,6 @@ function LookbookContent() {
   }
 
   const userSizes = collectUserSizes(buildPreferences);
-  const products = resolveProducts();
   const isEmpty = looks.length === 0;
 
   return (
@@ -218,99 +219,21 @@ function LookbookContent() {
           </div>
         </header>
 
-        {looks.map((look) => (
-          <section key={look.id} className="border-b border-smoke/30 py-12">
-            <h2 className="font-display text-2xl text-ivory">{look.title}</h2>
-            <p className="mt-3 text-sm leading-relaxed text-muted">{look.explanation}</p>
-            {look.matchExplanation && (
-              <p className="mt-3 text-sm text-accent">{look.matchExplanation}</p>
-            )}
-            <p className="mt-2 text-sm text-ivory">
-              Estimated total · {formatCurrency(look.totalEstimatedPrice, look.currency)}
-            </p>
-            <div className="mt-4 flex gap-2">
-              {look.colorPalette.map((c) => (
-                <span key={c} className="h-6 w-6 border border-smoke/40" style={{ backgroundColor: c }} title={c} />
-              ))}
-            </div>
-          </section>
-        ))}
-
-        <section className="py-12">
-          <h2 className="text-[10px] uppercase tracking-[0.35em] text-muted">Garment breakdown</h2>
-          {products.length === 0 ? (
-            <p className="mt-6 text-sm text-muted">No products in this lookbook.</p>
-          ) : (
-            <ul className="mt-6 divide-y divide-smoke/30">
-              {products.map((product) => {
-                const lookForProduct = looks.find((l) => l.productIds.includes(product.id));
-                const designer = product.designerId
-                  ? BETA_DESIGNERS.find((d) => d.id === product.designerId)
-                  : undefined;
-                const sizeStatus = checkSizeAvailability(product, userSizes);
-                const sourceLabel = designer ? designer.labelName : "Source";
-                const isSoldOut = product.inventoryStatus === "sold-out";
-                const isBrokenLink = product.productUrl.includes("example.com");
-
-                return (
-                  <li key={product.id} className="flex gap-4 py-5 md:py-6">
-                    <div className="relative h-28 w-24 shrink-0 overflow-hidden rounded-md border border-smoke/40 md:h-24 md:w-20 md:rounded-none">
-                      <AppImage
-                        src={product.imageUrls[0] ?? productImage(product.category)}
-                        alt={product.name}
-                        fill
-                        className="object-cover"
-                        sizes="80px"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[10px] uppercase tracking-[0.2em] text-muted">{sourceLabel}</p>
-                      <p className="mt-1 text-sm text-ivory">{product.name}</p>
-                      <p className="mt-1 text-sm text-accent">{formatCurrency(product.price, product.currency)}</p>
-                      <p className="mt-1 text-xs text-smoke">
-                        {product.condition !== "new" ? `${product.condition} · ` : ""}
-                        Sizes: {product.availableSizes.join(", ")}
-                      </p>
-                      {isSoldOut && (
-                        <p className="mt-2 text-xs text-smoke">Sold out at source</p>
-                      )}
-                      {sizeStatus === "check" && userSizes.length > 0 && (
-                        <p className="mt-2 text-xs text-accent">Check current size availability</p>
-                      )}
-                      {sizeStatus === "unavailable" && (
-                        <p className="mt-2 text-xs text-smoke">Not available in your selected size</p>
-                      )}
-                      {isBrokenLink && (
-                        <p className="mt-2 text-xs text-accent">Link unavailable — development data</p>
-                      )}
-                      {!isBrokenLink && !isSoldOut && (
-                        <ProductSourceActions product={product} userSizes={userSizes} />
-                      )}
-                      {designer && (
-                        <Link href={`/designers/${designer.slug}`} className="mt-2 inline-block text-[10px] uppercase tracking-[0.2em] text-accent">
-                          View designer
-                        </Link>
-                      )}
-                      {lookForProduct && (
-                        <div className="mt-3">
-                          <EditorialButton
-                            variant="ghost"
-                            disabled={replacing === product.id}
-                            onClick={() =>
-                              handleReplaceItem(lookForProduct.id, product.id, product.category)
-                            }
-                          >
-                            {replacing === product.id ? "Replacing..." : "Replace item"}
-                          </EditorialButton>
-                        </div>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
+        {looks.map((look) => {
+          const lookProducts = resolveLookProducts(look);
+          return (
+            <LookOutfitSection
+              key={look.id}
+              look={look}
+              products={lookProducts}
+              userSizes={userSizes}
+              replacing={replacing}
+              onReplaceItem={(productId, category) =>
+                handleReplaceItem(look.id, productId, category)
+              }
+            />
+          );
+        })}
       </AppPageMain>
 
       {!saved && !isEmpty && (

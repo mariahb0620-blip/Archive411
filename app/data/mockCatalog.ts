@@ -1,4 +1,5 @@
 import type { PriceRangeSelection } from "@/app/types/domain";
+import { CATEGORY_IMAGES, designerCoverImage } from "@/app/data/catalogImages";
 
 export {
   MOCK_DESIGNERS,
@@ -48,6 +49,7 @@ export const DISCOVERY_MODES = [
     title: "Search Your Way",
     description:
       "Search across designers, concept stores, vintage sellers and retailers worldwide — not one department or one retailer.",
+    imageUrl: CATEGORY_IMAGES.handbags,
   },
   {
     id: "build",
@@ -55,6 +57,7 @@ export const DISCOVERY_MODES = [
     title: "Build My Look",
     description:
       "Answer a few questions and let Archive411 create a complete lookbook from global sources.",
+    imageUrl: CATEGORY_IMAGES.dresses,
   },
   {
     id: "surprise",
@@ -62,6 +65,7 @@ export const DISCOVERY_MODES = [
     title: "Surprise Me",
     description:
       "Let Archive411 choose the direction and introduce you to something unexpected.",
+    imageUrl: CATEGORY_IMAGES.shoes,
   },
   {
     id: "independent",
@@ -69,6 +73,7 @@ export const DISCOVERY_MODES = [
     title: "The Independent Edit",
     description:
       "Discover independent and emerging designers shaping fashion across the world.",
+    imageUrl: designerCoverImage("linea-atelier"),
   },
 ] as const;
 

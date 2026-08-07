@@ -33,27 +33,29 @@ Live walkthrough script for beta approval. Production deploy only after this rev
 ### 2. Build My Look
 
 1. Go to `/build` (or Create tab → Build My Look)
-2. Complete questionnaire:
+2. Complete questionnaire (Continue is disabled until each step has required answers):
    - Style: Y2K / hot-girl-y2k
-   - Optional **Style Inspiration** chips (cultural communities — opt-in only)
    - Presentation: Feminine
    - Sizes, location, footwear
-3. Submit → loading state → lookbook results
-4. Verify product links open real designer URLs (no `example.com`)
-5. Repeat with **streetwear / masculine** profile — results should differ
+3. Submit → preference recap while loading → lookbook results
+4. Verify each look shows an **outfit grid** with product images grouped by edit
+5. Look titles should reflect style (e.g. "Hot-Girl Y2K · Nightlife Edit")
+6. Verify product links open real designer URLs (no `example.com`)
+7. Repeat with **streetwear / masculine** profile — results should differ
 
 ### 3. Search & Surprise
 
-1. Go to `/search` — structured search from the same verified catalog
-2. Try `/surprise` — random look from verified pool (no mock products)
+1. Go to `/search` — try example query chips and aesthetic filters
+2. Try `/surprise` — preview cover + product strip before opening lookbook
 3. Confirm product cards use category PNG placeholders (authorized SKU imagery is a launch gate)
 
 ### 4. Lookbook detail
 
 1. Open a generated lookbook
-2. Click product cards → valid retailer/designer URLs
-3. Test **Replace item** on one product
-4. **Save to Archive**
+2. Each look section shows styling copy + product grid (not a flat garment list)
+3. Click product cards → valid retailer/designer URLs
+4. Test **Replace item** on one product
+5. **Save to Archive**
 
 ### 5. My Archive & Collections
 
