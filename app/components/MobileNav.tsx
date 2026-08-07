@@ -29,7 +29,7 @@ const CREATE_OPTIONS = [
 function tabActive(pathname: string, href: string, isCreateActive: boolean): boolean {
   if (href === "/create") return isCreateActive;
   if (href === "/archive") {
-    return pathname === "/archive" || pathname.startsWith("/lookbooks");
+    return pathname === "/archive";
   }
   if (href === "/home") {
     return pathname === "/home" || pathname === "/independent" || pathname === "/designers";

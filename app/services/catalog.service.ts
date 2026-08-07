@@ -24,6 +24,8 @@ import { communitySearchAesthetics } from "@/app/data/styleCommunities";
 import { checkSizeAvailability } from "@/app/utils/sizeAvailability";
 import { pickRandom, rotateArray, shuffleArray } from "@/app/utils/pickRandom";
 import { scorePresentationMatch } from "@/app/utils/presentationMatch";
+import { scorePriceTierMatch } from "@/app/utils/priceTier";
+import { scoreOccasionMatch } from "@/app/utils/occasionRules";
 
 /** Verified beta catalog — never default to mock reference products. */
 function verifiedPool(override?: Product[]): Product[] {
@@ -226,21 +228,13 @@ function scoreProduct(
     if (status === "confirmed") score += 8;
   }
 
-  const maxBudget =
-    filters.priceRange?.customMax ??
-    (filters.priceRange?.tier === "under-50"
-      ? 50
-      : filters.priceRange?.tier === "50-100"
-        ? 100
-        : filters.priceRange?.tier === "100-250"
-          ? 250
-          : filters.priceRange?.tier === "250-500"
-            ? 500
-            : undefined);
-
-  if (maxBudget) {
+  if (filters.priceRange) {
     const priceUsd = convertToCurrency(product.price, product.currency, "USD");
-    if (priceUsd > maxBudget) score -= 80;
+    score += scorePriceTierMatch(
+      priceUsd,
+      filters.priceRange.tier,
+      filters.priceRange.customMax
+    );
   }
 
   if (filters.coverageLevel && filters.coverageLevel !== "no-preference") {
@@ -254,6 +248,10 @@ function scoreProduct(
 
   if (filters.fashionCommunities?.length) {
     score += 10;
+  }
+
+  if (filters.occasion) {
+    score += scoreOccasionMatch(product, filters.occasion, presentations);
   }
 
   if (!filters.shippingDestination) return score;
@@ -279,7 +277,7 @@ export function rankCatalogProducts(
   const scored = [...catalog]
     .map((product) => ({
       product,
-      score: scoreProduct(product, filters, terms, presentations),
+      score: scoreProduct(product, filters, terms, presentations) + Math.floor(Math.random() * 18),
     }))
     .filter(({ score }) => score > 0)
     .sort((a, b) => b.score - a.score);

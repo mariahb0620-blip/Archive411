@@ -6,6 +6,7 @@ import {
   CONTEXT_STEPS,
   COVERAGE_MAP,
   KAWAII_MAP,
+  PRESENTATION_OPTIONS,
   SIZING_SYSTEM_OPTIONS,
   SPECIAL_SIZING_OPTIONS,
   SIZE_CATEGORY_FIELDS,
@@ -13,7 +14,8 @@ import {
   type BuildStepId,
   type SizeCategoryKey,
 } from "@/app/data/buildQuestionnaire";
-import { DEFAULT_PRICE_RANGE, PRICE_TIER_LABELS } from "@/app/data/mockCatalog";
+import { DEFAULT_PRICE_RANGE, USER_PRICE_TIERS } from "@/app/data/mockCatalog";
+import { PRICE_TIER_LABELS } from "@/app/utils/priceTier";
 import { STYLE_COMMUNITIES } from "@/app/data/styleCommunities";
 import type { BuildLookAnswers } from "@/app/types/domain";
 
@@ -205,22 +207,7 @@ export function PresentationStep({
   answers: BuildLookAnswers;
   onChange: (patch: Partial<BuildLookAnswers>) => void;
 }) {
-  const options = [
-    "Feminine",
-    "Masculine",
-    "Androgynous",
-    "Gender-neutral",
-    "A mix",
-    "No preference",
-  ] as const;
-  const selected = answers.clothingPresentation ?? [];
-
-  const toggle = (opt: string) => {
-    const next = selected.includes(opt)
-      ? selected.filter((s) => s !== opt)
-      : [...selected, opt];
-    onChange({ clothingPresentation: next });
-  };
+  const selected = answers.clothingPresentation?.[0];
 
   return (
     <div className="w-full max-w-2xl text-left">
@@ -228,13 +215,13 @@ export function PresentationStep({
         A style preference — separate from gender identity. Guides silhouette,
         styling, and search terms without limiting retailer departments.
       </p>
-      <div className="mt-8 grid gap-2 sm:grid-cols-2">
-        {options.map((opt) => (
+      <div className="mt-8 grid gap-2">
+        {PRESENTATION_OPTIONS.map((opt) => (
           <SelectChip
             key={opt}
             label={opt}
-            selected={selected.includes(opt)}
-            onClick={() => toggle(opt)}
+            selected={selected === opt}
+            onClick={() => onChange({ clothingPresentation: [opt] })}
           />
         ))}
       </div>
@@ -637,6 +624,9 @@ export function ContextBriefStep({
 
       <fieldset>
         <legend className={sectionLabel}>What are you dressing for?</legend>
+        <p className="mt-1 text-xs text-muted">
+          Date night and Event prioritize going-out edits. Weekend and Everyday favor casual looks.
+        </p>
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
           {dressingOpts.map((opt) => (
             <SelectChip
@@ -679,14 +669,14 @@ export function ContextBriefStep({
 
       <fieldset>
         <legend className={sectionLabel}>Price range</legend>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          {Object.entries(PRICE_TIER_LABELS).map(([tier, label]) => (
+        <div className="mt-3 grid gap-2">
+          {USER_PRICE_TIERS.map((tier) => (
             <SelectChip
               key={tier}
-              label={label}
+              label={PRICE_TIER_LABELS[tier]}
               selected={range.tier === tier}
               onClick={() =>
-                onChange({ priceRange: { ...range, tier: tier as typeof range.tier } })
+                onChange({ priceRange: { ...range, tier } })
               }
             />
           ))}

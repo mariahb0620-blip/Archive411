@@ -103,6 +103,56 @@ async function main() {
   if (!resultA.lookbook || !resultA.looks?.length) fail("Feminine Y2K build returned empty");
   else pass(`Build My Look — feminine Y2K (${resultA.looks.length} looks)`);
 
+  if (resultA.looks.length > 3) {
+    fail(`Date night lookbook should have at most 3 looks, got ${resultA.looks.length}`);
+  } else {
+    pass(`Date night lookbook capped (${resultA.looks.length} looks)`);
+  }
+
+  const sneakersInDateNight = resultA.products.filter(
+    (p) =>
+      p.category === "shoes" &&
+      (p.subcategory?.toLowerCase().includes("sneaker") ||
+        p.name.toLowerCase().includes("sneaker") ||
+        p.id.toLowerCase().includes("salomon"))
+  );
+  if (sneakersInDateNight.length) {
+    fail(
+      `Date night lookbook includes sneakers: ${sneakersInDateNight.map((p) => p.id).join(", ")}`
+    );
+  } else {
+    pass("Date night lookbook excludes sneakers");
+  }
+
+  const athleticInDateNight = resultA.products.filter(
+    (p) =>
+      p.id === "beta-salomon-jacket" ||
+      (/technical|shell jacket|techwear|sporty/i.test(p.name) &&
+        p.category === "outerwear" &&
+        !p.occasionTags.some((t) => /evening|event|date|nightlife/i.test(t)))
+  );
+  if (athleticInDateNight.length) {
+    fail(
+      `Date night feminine lookbook includes athletic outerwear: ${athleticInDateNight.map((p) => p.id).join(", ")}`
+    );
+  } else {
+    pass("Date night lookbook excludes athletic outerwear");
+  }
+
+  const runA = await buildLookbookRecommendation(feminineY2K);
+  const runB = await buildLookbookRecommendation(feminineY2K);
+  const idsRunA = new Set(runA.looks.flatMap((l) => l.productIds));
+  const idsRunB = new Set(runB.looks.flatMap((l) => l.productIds));
+  const sameEveryTime =
+    idsRunA.size > 0 &&
+    idsRunA.size === idsRunB.size &&
+    [...idsRunA].every((id) => idsRunB.has(id));
+  if (sameEveryTime) {
+    fail("Repeated build with same answers returned identical product sets");
+  } else {
+    pass("Repeated build returns varied product selection");
+  }
+
   if (!resultB.lookbook || !resultB.looks?.length) fail("Streetwear build returned empty");
   else pass(`Build My Look — streetwear masculine (${resultB.looks.length} looks)`);
 

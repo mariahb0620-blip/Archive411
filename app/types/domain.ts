@@ -5,11 +5,13 @@ export type CurrencyCode = "USD" | "GBP" | "EUR" | "VND" | "THB" | "JPY" | "KRW"
 export type BudgetScope = "single-item" | "full-outfit" | "either";
 
 export type PriceTier =
+  | "0-200"
+  | "200-500"
+  | "500-plus"
   | "under-50"
   | "50-100"
   | "100-250"
   | "250-500"
-  | "500-plus"
   | "custom";
 
 export type GenerationMethod =
@@ -571,4 +573,5 @@ export interface SavedLookbookSession {
   looks: Look[];
   method: GenerationMethod;
   buildPreferences?: BuildLookAnswers;
+  products?: Product[];
 }

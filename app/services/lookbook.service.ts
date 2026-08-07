@@ -81,6 +81,7 @@ export function generateLookbookFromSearch(
 
   const looks = buildLooksFromProducts(candidates, lookbook.id, assembled.explanation, undefined, {
     styleBlend: "Editorial mix",
+    dressingFor: filters.occasion,
   });
   lookbook.coverImageUrl = coverFromProducts(
     looks.flatMap((l) => l.productIds ?? []),
@@ -138,7 +139,7 @@ export function generateSurpriseLookbook(
     lookbook.id,
     aestheticExplanation,
     undefined,
-    { styleBlend: picked, dressingFor: constraints.occasion }
+    { styleBlend: picked, dressingFor: constraints.occasion, footwearTypes: undefined }
   );
   lookbook.coverImageUrl = coverFromProducts(
     looks.flatMap((l) => l.productIds ?? []),

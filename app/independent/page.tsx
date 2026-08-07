@@ -14,11 +14,13 @@ import { INDEPENDENT_SECTIONS, MOCK_CONCEPT_STORES } from "@/app/data/mockCatalo
 import { getVerifiedDesignersSync } from "@/lib/catalog/verifiedPool";
 import {
   generateIndependentLookbook,
-  storeLookbookSession,
 } from "@/app/services/lookbook.service";
+import { completeLookbookFlow } from "@/app/services/completeLookbookFlow";
+import { useApp } from "@/app/context/AppContext";
 
 function IndependentContent() {
   const router = useRouter();
+  const { saveLookbook } = useApp();
   const searchParams = useSearchParams();
   const [city, setCity] = useState(searchParams.get("city") ?? "");
   const [madeToOrder, setMadeToOrder] = useState(searchParams.get("madeToOrder") === "1");
@@ -35,10 +37,13 @@ function IndependentContent() {
     [city, madeToOrder, customSizing]
   );
 
-  const generateEdit = () => {
+  const generateEdit = async () => {
     const { lookbook, looks } = generateIndependentLookbook(filtered.map((d) => d.id));
-    storeLookbookSession(lookbook, looks, "independent");
-    router.push(`/lookbooks/${lookbook.id}`);
+    await completeLookbookFlow(router, saveLookbook, {
+      lookbook,
+      looks,
+      method: "independent",
+    });
   };
 
   return (

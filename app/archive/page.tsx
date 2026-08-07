@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import AppImage from "@/app/components/AppImage";
 import AppHeader from "@/app/components/AppHeader";
 import AppPageMain from "@/app/components/AppPageMain";
@@ -11,6 +12,8 @@ import { useApp } from "@/app/context/AppContext";
 
 function ArchiveContent() {
   const { lookbooks, collections, user, refreshArchive, isLoading } = useApp();
+  const searchParams = useSearchParams();
+  const justGenerated = searchParams.get("generated") === "1";
 
   useEffect(() => {
     refreshArchive();
@@ -63,6 +66,12 @@ function ArchiveContent() {
           )}
         </header>
 
+        {justGenerated && (
+          <p className="mb-8 rounded-lg border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-ivory">
+            Your lookbook was saved to Archive. Full outfit browsing is coming in a future update.
+          </p>
+        )}
+
         {collections.length > 0 && (
           <section className="mb-16">
             <h2 className="text-[10px] uppercase tracking-[0.3em] text-muted">Collections</h2>
@@ -81,17 +90,16 @@ function ArchiveContent() {
           <h2 className="text-[10px] uppercase tracking-[0.3em] text-muted">Saved lookbooks</h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {lookbooks.map((lb) => (
-              <Link
+              <article
                 key={lb.id}
-                href={`/lookbooks/${lb.id}`}
-                className="group overflow-hidden rounded-xl border border-smoke/50 bg-charcoal active:scale-[0.98] md:rounded-none md:active:scale-100"
+                className="overflow-hidden rounded-xl border border-smoke/50 bg-charcoal md:rounded-none"
               >
                 <div className="relative aspect-[3/4] overflow-hidden">
                   <AppImage
                     src={lb.coverImageUrl}
                     alt={lb.title}
                     fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                    className="object-cover"
                     sizes="(max-width:768px) 100vw, 400px"
                   />
                 </div>
@@ -108,7 +116,7 @@ function ArchiveContent() {
                     ))}
                   </div>
                 </div>
-              </Link>
+              </article>
             ))}
           </div>
         </section>

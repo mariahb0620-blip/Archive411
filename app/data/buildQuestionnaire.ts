@@ -50,9 +50,6 @@ export const PRESENTATION_OPTIONS = [
   "Feminine",
   "Masculine",
   "Androgynous",
-  "Gender-neutral",
-  "A mix",
-  "No preference",
 ] as const;
 
 export const SIZING_SYSTEM_OPTIONS = [

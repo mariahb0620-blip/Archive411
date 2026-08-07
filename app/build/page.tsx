@@ -19,8 +19,9 @@ import {
 } from "@/app/components/build/BuildQuestionSteps";
 import { getBuildSteps, canAdvanceFromStep, type BuildStepId } from "@/app/data/buildQuestionnaire";
 import PreferenceTagsBar from "@/app/components/build/PreferenceTagsBar";
-import { storeLookbookSession } from "@/app/services/lookbook.service";
+import { completeLookbookFlow } from "@/app/services/completeLookbookFlow";
 import { fetchBuildRecommendation } from "@/app/services/archive.api";
+import { useApp } from "@/app/context/AppContext";
 import type { BuildLookAnswers } from "@/app/types/domain";
 import { EDITORIAL_EASE } from "@/app/lib/motion";
 
@@ -38,6 +39,7 @@ function normalizeBuildAnswers(answers: BuildLookAnswers): BuildLookAnswers {
 
 function BuildContent() {
   const router = useRouter();
+  const { saveLookbook } = useApp();
   const searchParams = useSearchParams();
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState<BuildLookAnswers>({});
@@ -81,14 +83,13 @@ function BuildContent() {
     const normalized = normalizeBuildAnswers(answers);
     try {
       const result = await fetchBuildRecommendation(normalized);
-      storeLookbookSession(
-        result.lookbook,
-        result.looks,
-        "build",
-        normalized,
-        result.products
-      );
-      router.push(`/lookbooks/${result.lookbook.id}`);
+      await completeLookbookFlow(router, saveLookbook, {
+        lookbook: result.lookbook,
+        looks: result.looks,
+        method: "build",
+        buildPreferences: normalized,
+        products: result.products,
+      });
     } catch {
       setError("We could not generate your lookbook. Please try again.");
     } finally {
@@ -137,7 +138,7 @@ function BuildContent() {
               <p className="mt-3 max-w-xs text-sm text-muted">
                 {loadingPhase === 0 && "Filtering verified catalog by your style and size…"}
                 {loadingPhase === 1 && "Assembling outfit edits…"}
-                {loadingPhase >= 2 && "Finalizing your personalized lookbook…"}
+                {loadingPhase >= 2 && "Saving to your archive…"}
               </p>
             </div>
           ) : (

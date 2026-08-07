@@ -1,4 +1,5 @@
 import type { PriceRangeSelection } from "@/app/types/domain";
+import { PRICE_TIER_LABELS, USER_PRICE_TIERS } from "@/app/utils/priceTier";
 import { CATEGORY_IMAGES, designerCoverImage } from "@/app/data/catalogImages";
 
 export {
@@ -12,17 +13,10 @@ export {
 export const MOCK_DISCLAIMER =
   "Mock development data — reference examples only. Not official partnerships. Structured for production API replacement.";
 
-export const PRICE_TIER_LABELS: Record<string, string> = {
-  "under-50": "Under $50",
-  "50-100": "$50–$100",
-  "100-250": "$100–$250",
-  "250-500": "$250–$500",
-  "500-plus": "$500+",
-  custom: "Custom range",
-};
+export { PRICE_TIER_LABELS, USER_PRICE_TIERS };
 
 export const DEFAULT_PRICE_RANGE: PriceRangeSelection = {
-  tier: "100-250",
+  tier: "0-200",
   scope: "full-outfit",
   currency: "USD",
 };

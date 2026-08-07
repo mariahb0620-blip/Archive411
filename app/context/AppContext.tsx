@@ -54,7 +54,7 @@ interface AppContextValue extends SessionState {
   signOut: () => Promise<void>;
   saveLookbook: (
     lookbook: Lookbook,
-    session?: Pick<SavedLookbookSession, "looks" | "method" | "buildPreferences">
+    session?: Pick<SavedLookbookSession, "looks" | "method" | "buildPreferences" | "products">
   ) => Promise<void>;
   refreshArchive: () => Promise<void>;
   createCollection: (name: string, description?: string) => ArchiveCollection;
@@ -320,7 +320,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const saveLookbook = useCallback(
     async (
       lookbook: Lookbook,
-      session?: Pick<SavedLookbookSession, "looks" | "method" | "buildPreferences">
+      session?: Pick<SavedLookbookSession, "looks" | "method" | "buildPreferences" | "products">
     ) => {
       if (!user) return;
       const saved: Lookbook = {
@@ -336,6 +336,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           looks: session.looks,
           method: session.method,
           buildPreferences: session.buildPreferences,
+          products: session.products,
         });
       }
 

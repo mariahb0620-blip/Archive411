@@ -56,7 +56,7 @@ function HomeContent() {
               <p className="mt-1 line-clamp-1 text-sm text-ivory">{recentLookbook.title}</p>
             </div>
             <Link
-              href={`/lookbooks/${recentLookbook.id}`}
+              href="/archive"
               className="shrink-0 rounded-full bg-accent/10 px-4 py-2 text-xs uppercase tracking-wider text-accent"
             >
               Open

@@ -15,11 +15,13 @@ import {
 } from "@/app/data/styleCommunities";
 import {
   generateLookbookFromSearch,
-  storeLookbookSession,
 } from "@/app/services/lookbook.service";
+import { completeLookbookFlow } from "@/app/services/completeLookbookFlow";
+import { useApp } from "@/app/context/AppContext";
 
 function DiscoverContent() {
   const router = useRouter();
+  const { saveLookbook } = useApp();
   const searchParams = useSearchParams();
   const communityId = searchParams.get("community");
   const city = searchParams.get("city") ?? undefined;
@@ -31,15 +33,18 @@ function DiscoverContent() {
     if (communityId) setCommunity(getStyleCommunity(communityId));
   }, [communityId]);
 
-  const exploreCommunity = () => {
+  const exploreCommunity = async () => {
     if (!community) return;
     const { lookbook, looks } = generateLookbookFromSearch({
       aesthetics: community.searchAesthetics,
       city,
       fashionCommunities: [community.id],
     });
-    storeLookbookSession(lookbook, looks, "search");
-    router.push(`/lookbooks/${lookbook.id}`);
+    await completeLookbookFlow(router, saveLookbook, {
+      lookbook,
+      looks,
+      method: "search",
+    });
   };
 
   return (

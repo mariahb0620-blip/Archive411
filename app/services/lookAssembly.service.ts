@@ -4,7 +4,12 @@ import {
   MIXED_STYLING_NOTES,
 } from "@/app/data/styleUniverse";
 import { convertToCurrency } from "@/app/services/catalog.service";
-import { productImage } from "@/app/data/catalogImages";
+import {
+  lookIdsForOccasion,
+  isOccasionAppropriate,
+  pickShoePredicate,
+  shoeMatchTier,
+} from "@/app/utils/occasionRules";
 import { pickRandom, rotateArray, shuffleArray } from "@/app/utils/pickRandom";
 
 function id(prefix: string) {
@@ -14,42 +19,23 @@ function id(prefix: string) {
 export interface AssembleLookbookOptions {
   styleBlend?: string;
   dressingFor?: string;
+  footwearTypes?: string[];
+  presentations?: string[];
 }
 
-function orderInterpretations(dressingFor?: string) {
-  const specs = [...LOOK_INTERPRETATIONS];
-  const promote = (lookId: string) => {
-    const idx = specs.findIndex((s) => s.id === lookId);
-    if (idx > 0) {
-      const [item] = specs.splice(idx, 1);
-      specs.unshift(item);
-    }
-  };
-
-  const occasion = dressingFor?.toLowerCase() ?? "";
-  if (occasion.includes("date") || occasion.includes("night")) {
-    promote("nightlife");
-  } else if (occasion.includes("work") || occasion.includes("everyday")) {
-    promote("everyday");
-    promote("polished");
-  } else if (occasion.includes("event")) {
-    promote("polished");
-    promote("nightlife");
+function selectInterpretationsForOccasion(dressingFor?: string) {
+  const lookIds = lookIdsForOccasion(dressingFor);
+  if (lookIds?.length) {
+    return lookIds
+      .map((lookId) => LOOK_INTERPRETATIONS.find((spec) => spec.id === lookId))
+      .filter(Boolean) as (typeof LOOK_INTERPRETATIONS)[number][];
   }
-
-  return specs;
+  return [...LOOK_INTERPRETATIONS];
 }
 
 function personalizedTitle(specTitle: string, styleBlend?: string): string {
   if (!styleBlend || styleBlend === "Editorial mix") return specTitle;
   return `${styleBlend} · ${specTitle}`;
-}
-
-function paletteFromProducts(products: Product[]): string[] {
-  return products
-    .slice(0, 5)
-    .map((p) => p.imageUrls[0] ?? productImage(p.category))
-    .filter(Boolean);
 }
 
 function productMatchesTags(product: Product, tags: readonly string[]): boolean {
@@ -81,16 +67,34 @@ function hasMixedPresentation(products: Product[]): boolean {
   );
 }
 
+interface PickContext {
+  dressingFor?: string;
+  footwearTypes?: string[];
+  presentations?: string[];
+}
+
 function pickForLook(
   pool: Product[],
   spec: (typeof LOOK_INTERPRETATIONS)[number],
   usedProductIds: Set<string>,
   usedDesignerIds: Set<string>,
-  lookIndex: number
+  lookIndex: number,
+  context: PickContext
 ): Product[] {
   const selected: Product[] = [];
-  const shuffledPool = shuffleArray(pool.filter((p) => !usedProductIds.has(p.id)));
-  const available = rotateArray(shuffledPool, lookIndex * 3 + Math.floor(Math.random() * 5));
+  const shuffledPool = shuffleArray(
+    pool.filter(
+      (p) =>
+        !usedProductIds.has(p.id) &&
+        isOccasionAppropriate(p, context.dressingFor, context.presentations, "relaxed")
+    )
+  );
+  const available = rotateArray(
+    shuffledPool,
+    lookIndex * 11 + Math.floor(Math.random() * Math.max(shuffledPool.length, 1))
+  );
+  const matchesShoeStrict = pickShoePredicate(context.dressingFor, context.footwearTypes, "strict");
+  const matchesShoeRelaxed = pickShoePredicate(context.dressingFor, context.footwearTypes, "relaxed");
 
   const tryPick = (predicate: (p: Product) => boolean) => {
     const matches = available.filter(
@@ -99,7 +103,7 @@ function pickForLook(
         !selected.includes(p) &&
         (!p.designerId || !usedDesignerIds.has(p.designerId) || selected.length >= 2)
     );
-    const item = pickRandom(matches, 8);
+    const item = pickRandom(matches, 14);
     if (item) {
       selected.push(item);
       if (item.designerId) usedDesignerIds.add(item.designerId);
@@ -107,8 +111,18 @@ function pickForLook(
     return item;
   };
 
+  const tryPickShoe = () => {
+    if (selected.some((p) => p.category === "shoes")) return true;
+    if (tryPick((p) => p.category === "shoes" && matchesShoeStrict(p))) return true;
+    return tryPick((p) => p.category === "shoes" && matchesShoeRelaxed(p));
+  };
+
   for (const cat of spec.requiredCategories) {
-    tryPick((p) => p.category === cat);
+    if (cat === "shoes") {
+      tryPickShoe();
+    } else {
+      tryPick((p) => p.category === cat);
+    }
   }
 
   if ("preferCategories" in spec && spec.preferCategories) {
@@ -127,7 +141,7 @@ function pickForLook(
   }
 
   if (!selected.some((p) => p.category === "shoes")) {
-    tryPick((p) => p.category === "shoes");
+    tryPickShoe();
   }
   if (!selected.some((p) => ["handbags", "jewelry", "accessories", "sunglasses"].includes(p.category))) {
     tryPick((p) => ["handbags", "jewelry", "accessories", "sunglasses"].includes(p.category));
@@ -145,6 +159,10 @@ function pickForLook(
   const remainder = shuffleArray(available.filter((p) => !selected.includes(p)));
   for (const p of remainder) {
     if (selected.length >= 5) break;
+    if (p.category === "shoes") {
+      const tier = shoeMatchTier(p, context.dressingFor, context.footwearTypes);
+      if (tier === "none") continue;
+    }
     if (!selected.includes(p)) {
       selected.push(p);
       if (p.designerId) usedDesignerIds.add(p.designerId);
@@ -180,11 +198,28 @@ export function assembleVariedLookbook(
 ): Look[] {
   if (!candidates.length) return [];
 
-  const rotatedCandidates = rotateArray(shuffleArray(candidates));
+  const context: PickContext = {
+    dressingFor: options?.dressingFor,
+    footwearTypes: options?.footwearTypes,
+    presentations: options?.presentations,
+  };
+
+  const occasionFiltered = candidates.filter((p) =>
+    isOccasionAppropriate(p, context.dressingFor, context.presentations, "relaxed")
+  );
+
+  const shoeFilteredCandidates = occasionFiltered.filter((p) => {
+    if (p.category !== "shoes") return true;
+    return shoeMatchTier(p, context.dressingFor, context.footwearTypes) !== "none";
+  });
+
+  const rotatedCandidates = rotateArray(
+    shuffleArray(shoeFilteredCandidates.length ? shoeFilteredCandidates : candidates)
+  );
   const usedProductIds = new Set<string>();
   const usedDesignerIds = new Set<string>();
   const looks: Look[] = [];
-  const interpretations = orderInterpretations(options?.dressingFor);
+  const interpretations = selectInterpretationsForOccasion(options?.dressingFor);
 
   interpretations.forEach((spec, index) => {
     const products = pickForLook(
@@ -192,7 +227,8 @@ export function assembleVariedLookbook(
       spec,
       usedProductIds,
       usedDesignerIds,
-      index
+      index,
+      context
     );
     if (!products.length) return;
 
@@ -215,7 +251,7 @@ export function assembleVariedLookbook(
       explanation: spec.description,
       totalEstimatedPrice: totalUsd,
       currency: products[0]?.currency ?? "USD",
-      colorPalette: paletteFromProducts(products),
+      colorPalette: [],
       silhouetteTags: products.flatMap((p) => p.aestheticTags).slice(0, 4),
       occasionTags: products.flatMap((p) => p.occasionTags).slice(0, 4),
       stylingExplanation:

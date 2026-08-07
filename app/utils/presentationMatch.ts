@@ -37,8 +37,8 @@ export function scorePresentationMatch(
 
   if (wantsFem && !wantsMasc && !wantsAndro) {
     if (hasFem) return 35;
-    if (hasAndro) return 10;
     if (hasMasc && !hasFem) return -80;
+    if (hasAndro) return 10;
     if (product.departmentTags.includes("womenswear")) return 20;
     if (
       product.departmentTags.includes("menswear") &&

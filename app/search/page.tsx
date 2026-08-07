@@ -10,9 +10,11 @@ import StickyActionBar from "@/app/components/StickyActionBar";
 import { SelectChip } from "@/app/components/build/BuildQuestionSteps";
 import { AESTHETIC_TAGS, DEPARTMENT_OPTIONS } from "@/app/data/aestheticTags";
 import { FASHION_CITIES } from "@/app/data/fashionCities";
-import { DEFAULT_PRICE_RANGE, PRICE_TIER_LABELS } from "@/app/data/mockCatalog";
+import { DEFAULT_PRICE_RANGE, USER_PRICE_TIERS } from "@/app/data/mockCatalog";
+import { PRICE_TIER_LABELS } from "@/app/utils/priceTier";
 import { fetchSearchRecommendation } from "@/app/services/archive.api";
-import { storeLookbookSession } from "@/app/services/lookbook.service";
+import { completeLookbookFlow } from "@/app/services/completeLookbookFlow";
+import { useApp } from "@/app/context/AppContext";
 import type { DepartmentFilter, PriceRangeSelection } from "@/app/types/domain";
 
 const OCCASIONS = ["Work", "Date night", "Travel", "Event", "Everyday", "Nightlife", "Vacation"];
@@ -28,6 +30,7 @@ const FEATURED_AESTHETICS = AESTHETIC_TAGS.slice(0, 12);
 
 function SearchContent() {
   const router = useRouter();
+  const { saveLookbook } = useApp();
   const [query, setQuery] = useState("");
   const [aesthetic, setAesthetic] = useState("");
   const [occasion, setOccasion] = useState("");
@@ -58,8 +61,12 @@ function SearchContent() {
         setError(result.message ?? "No matches found. Try broadening your filters.");
         return;
       }
-      storeLookbookSession(result.lookbook, result.looks, "search", undefined, result.products);
-      router.push(`/lookbooks/${result.lookbook.id}`);
+      await completeLookbookFlow(router, saveLookbook, {
+        lookbook: result.lookbook,
+        looks: result.looks,
+        method: "search",
+        products: result.products,
+      });
     } catch {
       setError("Search failed. Please try again.");
     } finally {
@@ -151,8 +158,10 @@ function SearchContent() {
               onChange={(tier) =>
                 setPriceRange((p) => ({ ...p, tier: tier as PriceRangeSelection["tier"] }))
               }
-              options={Object.keys(PRICE_TIER_LABELS)}
-              labels={PRICE_TIER_LABELS}
+              options={USER_PRICE_TIERS}
+              labels={Object.fromEntries(
+                USER_PRICE_TIERS.map((tier) => [tier, PRICE_TIER_LABELS[tier]])
+              )}
             />
           </div>
 

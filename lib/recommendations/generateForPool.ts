@@ -20,6 +20,7 @@ import { STYLE_TO_AESTHETIC } from "@/app/data/curatedRoster";
 import { inspirationTagsForIds } from "@/app/data/styleInspiration";
 import { communitySearchAesthetics } from "@/app/data/styleCommunities";
 import { resolveDepartmentFromBuild } from "@/app/utils/presentationMatch";
+import { isOccasionAppropriate } from "@/app/utils/occasionRules";
 import { EDITORIAL_COVER } from "@/app/data/catalogImages";
 import { coverFromProducts, normalizeCoverImageUrl } from "@/app/data/productImagery";
 
@@ -66,7 +67,7 @@ function buildLooksFromProducts(
   lookbookId: string,
   matchExplanation: string,
   stylingNote?: string,
-  options?: { styleBlend?: string; dressingFor?: string }
+  options?: { styleBlend?: string; dressingFor?: string; footwearTypes?: string[]; presentations?: string[] }
 ): Look[] {
   if (!candidates.length) return [];
 
@@ -106,6 +107,20 @@ export function generateLookbookFromBuildForPool(
   const aestheticTags = styleAestheticTags(answers);
   const footwearExcluded = answers.footwear?.inclusion === "no";
 
+  let filteredPool = pool.filter((p) => !p.isReferenceExample);
+  if (footwearExcluded) {
+    filteredPool = filteredPool.filter((p) => p.category !== "shoes");
+  }
+
+  const strictPool = filteredPool.filter((p) =>
+    isOccasionAppropriate(p, answers.dressingFor, presentations, "strict")
+  );
+  const relaxedPool = filteredPool.filter((p) =>
+    isOccasionAppropriate(p, answers.dressingFor, presentations, "relaxed")
+  );
+  const productPool =
+    strictPool.length >= 12 ? strictPool : relaxedPool.length ? relaxedPool : filteredPool;
+
   const searchFilters = {
     aesthetics: aestheticTags,
     fashionCommunities: answers.fashionCommunities,
@@ -113,19 +128,15 @@ export function generateLookbookFromBuildForPool(
     kawaiiIntensity: answers.kawaiiIntensity,
     city: location,
     climate: answers.climate,
+    occasion: answers.dressingFor,
     priceRange: answers.priceRange ?? DEFAULT_PRICE_RANGE,
     sizes: searchSizes,
     independentOnly: independent,
     department,
   } as const;
 
-  let filteredPool = pool.filter((p) => !p.isReferenceExample);
-  if (footwearExcluded) {
-    filteredPool = filteredPool.filter((p) => p.category !== "shoes");
-  }
-
-  const assembled = assembleDiverseLook(searchFilters, answers, filteredPool);
-  const ranked = searchCatalog(searchFilters, presentations, filteredPool);
+  const assembled = assembleDiverseLook(searchFilters, answers, productPool);
+  const ranked = searchCatalog(searchFilters, presentations, productPool);
   const candidates = rotateArray(shuffleArray(mergeCandidatePool(assembled, ranked)));
 
   const lookbookId = id("lb");
@@ -134,6 +145,8 @@ export function generateLookbookFromBuildForPool(
   const looks = buildLooksFromProducts(candidates, lookbookId, matchExplanation, undefined, {
     styleBlend: blendTitle,
     dressingFor: answers.dressingFor,
+    footwearTypes: answers.footwear?.types,
+    presentations: answers.clothingPresentation,
   });
 
   const lookbook: Lookbook = {

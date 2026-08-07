@@ -11,15 +11,15 @@ import { DEFAULT_PRICE_RANGE } from "@/app/data/mockCatalog";
 import { productImage } from "@/app/data/catalogImages";
 import {
   generateSurpriseLookbook,
-  storeLookbookSession,
 } from "@/app/services/lookbook.service";
+import { completeLookbookFlow } from "@/app/services/completeLookbookFlow";
 import { getVerifiedProductsSync } from "@/lib/catalog/verifiedPool";
 import type { SurpriseConstraints } from "@/app/types/domain";
 import { useApp } from "@/app/context/AppContext";
 
 function SurpriseContent() {
   const router = useRouter();
-  const { saveLookbook, user } = useApp();
+  const { saveLookbook } = useApp();
   const [constraints, setConstraints] = useState<SurpriseConstraints>({
     priceRange: DEFAULT_PRICE_RANGE,
     adventurousness: 50,
@@ -41,15 +41,13 @@ function SurpriseContent() {
     setResult(generateSurpriseLookbook(constraints));
   };
 
-  const openLookbook = () => {
+  const saveToArchive = async () => {
     if (!result) return;
-    storeLookbookSession(result.lookbook, result.looks, "surprise");
-    router.push(`/lookbooks/${result.lookbook.id}`);
-  };
-
-  const save = () => {
-    if (!result || user?.isGuest) return;
-    saveLookbook(result.lookbook);
+    await completeLookbookFlow(router, saveLookbook, {
+      lookbook: result.lookbook,
+      looks: result.looks,
+      method: "surprise",
+    });
   };
 
   return (
@@ -136,14 +134,9 @@ function SurpriseContent() {
               )}
               <div className="mt-8 flex flex-wrap gap-3">
                 <EditorialButton onClick={generate}>Try another</EditorialButton>
-                <EditorialButton variant="ghost" onClick={openLookbook}>
-                  View lookbook
+                <EditorialButton variant="ghost" onClick={saveToArchive}>
+                  Save to Archive
                 </EditorialButton>
-                {!user?.isGuest && (
-                  <EditorialButton variant="ghost" onClick={save}>
-                    Save to My Archive
-                  </EditorialButton>
-                )}
               </div>
             </div>
           </div>
