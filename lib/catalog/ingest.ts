@@ -1,4 +1,5 @@
 import type { ImportProductRecord, ImportSummary } from "@/lib/catalog/types";
+import { applyEnrichmentToProduct, enrichProductTags } from "@/lib/catalog/enrichTags";
 import { verifyProductStatic, applyVerificationToProduct } from "@/lib/catalog/verifyProduct";
 import { normalizeImportRecord } from "@/lib/catalog/providers/types";
 import type { Product } from "@/app/types/domain";
@@ -6,12 +7,14 @@ import type { Product } from "@/app/types/domain";
 export interface IngestOptions {
   dryRun?: boolean;
   skipFetch?: boolean;
+  /** Optional OpenAI tag enrichment after verification (verified products only). */
+  enrichTags?: boolean;
 }
 
-export function ingestImportRecords(
+export async function ingestImportRecords(
   records: ImportProductRecord[],
   options: IngestOptions = {}
-): { products: Product[]; summary: ImportSummary } {
+): Promise<{ products: Product[]; summary: ImportSummary }> {
   const summary: ImportSummary = {
     added: 0,
     updated: 0,
@@ -46,6 +49,11 @@ export function ingestImportRecords(
 
       const staticResult = verifyProductStatic(product);
       product = applyVerificationToProduct(product, staticResult);
+
+      if (options.enrichTags && staticResult.verificationStatus === "verified") {
+        const enrichment = await enrichProductTags(product);
+        product = applyEnrichmentToProduct(product, enrichment);
+      }
 
       if (staticResult.verificationStatus === "verified") {
         summary.verified++;

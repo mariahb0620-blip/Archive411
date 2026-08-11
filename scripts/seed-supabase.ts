@@ -8,9 +8,10 @@ import path from "path";
 import { createClient } from "@supabase/supabase-js";
 import { BETA_DESIGNERS, BETA_PRODUCTS } from "../app/data/betaCatalog";
 import { EXTENDED_DESIGNERS, EXTENDED_PRODUCTS } from "../app/data/extendedCatalog";
+import { getImportedProducts } from "../lib/catalog/importedProducts";
 
 const ALL_DESIGNERS = [...BETA_DESIGNERS, ...EXTENDED_DESIGNERS];
-const ALL_PRODUCTS = [...BETA_PRODUCTS, ...EXTENDED_PRODUCTS];
+const ALL_PRODUCTS = [...BETA_PRODUCTS, ...EXTENDED_PRODUCTS, ...getImportedProducts()];
 
 function loadEnvLocal() {
   const envPath = path.join(process.cwd(), ".env.local");
@@ -71,8 +72,9 @@ async function seed() {
   }
 
   console.log("Seeding products...");
+  let migration003 = process.env.CATALOG_MIGRATION_003 !== "false";
   for (const p of ALL_PRODUCTS) {
-    const { error } = await supabase.from("products").upsert({
+    const coreRow = {
       id: p.id,
       name: p.name,
       description: p.description,
@@ -104,6 +106,8 @@ async function seed() {
       purchase_flow: p.purchaseFlow ?? "direct",
       last_verified_at: p.lastVerifiedAt,
       updated_at: p.updatedAt,
+    };
+    const extendedRow = {
       source_url: p.sourceUrl ?? p.productUrl,
       source_type: p.sourceType ?? "curated",
       source_product_id: p.sourceProductId,
@@ -123,7 +127,16 @@ async function seed() {
       affiliate_url: p.affiliateUrl,
       affiliate_network: p.affiliateNetwork,
       stock_status: p.stockStatus ?? p.inventoryStatus,
-    });
+    };
+
+    const payload = migration003 ? { ...coreRow, ...extendedRow } : coreRow;
+    let { error } = await supabase.from("products").upsert(payload);
+    if (error && migration003 && /schema cache|column/i.test(error.message)) {
+      migration003 = false;
+      console.warn("  Migration 003 columns missing — seeding core product fields only.");
+      console.warn("  Run supabase/migrations/003_product_verification.sql then re-seed.");
+      ({ error } = await supabase.from("products").upsert(coreRow));
+    }
     if (error) console.error(`  product ${p.id}:`, error.message);
   }
 

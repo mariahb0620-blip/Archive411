@@ -1,0 +1,22 @@
+[
+  {
+    "id": "import-example-heels",
+    "designerId": "des-guape",
+    "designer": "GUAPÉ Studio",
+    "productName": "Example sculptural heel",
+    "productUrl": "https://guapestudio.com/products/mesh-ribbon-heels-black",
+    "imageUrl": "https://guapestudio.com/cdn/shop/files/example.jpg",
+    "imageSource": "retailer",
+    "price": 320,
+    "currency": "GBP",
+    "category": "shoes",
+    "subcategory": "heel",
+    "availableSizes": ["36", "37", "38", "39", "40"],
+    "presentationTags": ["feminine", "androgynous"],
+    "occasionTags": ["date night", "evening", "event"],
+    "climateTags": ["transitional", "winter"],
+    "aestheticTags": ["sculptural", "nightlife"],
+    "departmentTags": ["womenswear"],
+    "sourceType": "curated"
+  }
+]

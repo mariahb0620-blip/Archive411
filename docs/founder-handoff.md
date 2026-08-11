@@ -7,7 +7,8 @@ Live walkthrough script for beta approval. Production deploy only after this rev
 - [x] Supabase tables created (`001_initial_schema.sql`)
 - [x] Archive features migration applied (`002_archive_features.sql`)
 - [x] Catalog seeded: `npm run catalog:seed` → **32 designers, 42 products** (18 shoppable + 24 browse-only)
-- [ ] Apply migration `003_product_verification.sql` then re-seed
+- [ ] Apply migration `003_product_verification.sql` then re-seed (see below)
+- [ ] Add `SUPABASE_DB_PASSWORD` to `.env.local` for `npm run db:migrate`, or paste SQL in Supabase SQL Editor
 - [ ] Email confirmation **disabled** in Supabase Auth
 - [ ] Google OAuth provider **enabled** in Supabase Auth (optional for demo — email works without it)
 - [ ] Preview URL added to Supabase redirect URLs
@@ -87,9 +88,11 @@ Live walkthrough script for beta approval. Production deploy only after this rev
 | My Archive | Real (Supabase + RLS) |
 | Collections | Real (`/collections` + Supabase, migration 002) |
 | Saved designers API | Real (migration 002) |
-| Build My Look recommendations | Real (18 verified SKU products in shoppable pool; 32 designers total) |
+| Build My Look recommendations | Real (18 shoppable SKUs; import via `data/catalog/import/batch-*.json`) |
 | Search / Surprise | Real (eligible verified catalog only) |
 | Product links | Shop now → exact product URLs only; browse-only pieces excluded from looks |
+| Catalog import | `npm run catalog:import` merges into `verified-products.json` + Supabase |
+| OpenAI enrichment | Optional — `npm run catalog:enrich-sample` (verified products, tags only) |
 | Product images | Category PNG placeholders (not authorized SKU photos) |
 | Designer dashboard | Shell — application status + roadmap sections |
 | Quick Generate (`/generate`) | Redirects to Build My Look |
@@ -106,12 +109,15 @@ Live walkthrough script for beta approval. Production deploy only after this rev
 
 ## After approval
 
-1. Promote Vercel preview → production
-2. Set `NEXT_PUBLIC_APP_URL` to production domain
-3. Add production URL to Supabase redirect URLs
-4. Enable Google OAuth redirect URLs for production
-5. Rotate Supabase secret key if not already done
-6. Share beta tester invite list
+1. Apply `003_product_verification.sql` in Supabase SQL Editor (or `npm run db:migrate`)
+2. `npm run catalog:seed` (re-seed with verification columns)
+3. Promote Vercel preview → production
+4. Set `NEXT_PUBLIC_APP_URL` to production domain
+5. Add production URL to Supabase redirect URLs
+6. Enable Google OAuth redirect URLs for production
+7. Rotate Supabase secret key if not already done
+8. Run `npm run vercel:journey` against production URL
+9. Share beta tester invite list
 
 ## Rollback
 
@@ -119,7 +125,9 @@ See [deployment.md](./deployment.md) — promote previous Vercel deployment; dat
 
 ## Reference
 
-- Catalog verification: `npm run catalog:verify`, `npm run catalog:coverage`
+- Catalog verification: `npm run catalog:verify`, `npm run catalog:coverage`, `npm run catalog:import`
+- OpenAI sample enrichment: `npm run catalog:enrich-sample -- --report`
+- Import guide: [data/catalog/import/README.md](../data/catalog/import/README.md)
 - Pipeline docs: [catalog-pipeline.md](./catalog-pipeline.md)
 - Full QA report: [qa-report.md](./qa-report.md)
 - Known limitations: [known-issues.md](./known-issues.md)

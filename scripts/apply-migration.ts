@@ -45,8 +45,7 @@ Get it from Supabase Dashboard:
 Then add to .env.local:
   SUPABASE_DB_PASSWORD=your-password
 
-Or paste supabase/migrations/001_initial_schema.sql into
-  SQL Editor → New query → Run
+Or paste supabase/migrations/*.sql into SQL Editor → New query → Run
 `);
   process.exit(1);
 }
@@ -87,15 +86,31 @@ async function connect(): Promise<Client> {
   throw lastError ?? new Error("Could not connect to Supabase Postgres");
 }
 
-async function main() {
-  const sqlPath = path.join(process.cwd(), "supabase/migrations/001_initial_schema.sql");
-  const sql = fs.readFileSync(sqlPath, "utf8");
-  const client = await connect();
+function listMigrationFiles(): string[] {
+  const dir = path.join(process.cwd(), "supabase/migrations");
+  return fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith(".sql"))
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+    .map((f) => path.join(dir, f));
+}
 
+async function main() {
+  const files = listMigrationFiles();
+  if (!files.length) {
+    console.error("No migration files in supabase/migrations/");
+    process.exit(1);
+  }
+
+  const client = await connect();
   try {
-    console.log("Applying migration...");
-    await client.query(sql);
-    console.log("Migration applied successfully.");
+    for (const sqlPath of files) {
+      const sql = fs.readFileSync(sqlPath, "utf8");
+      console.log(`Applying ${path.basename(sqlPath)}...`);
+      await client.query(sql);
+      console.log(`  OK — ${path.basename(sqlPath)}`);
+    }
+    console.log("\nAll migrations applied successfully.");
   } finally {
     await client.end();
   }

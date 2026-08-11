@@ -19,6 +19,7 @@
     "catalog:coverage": "npx tsx scripts/catalog-coverage.ts",
     "catalog:stale": "npx tsx scripts/catalog-stale.ts",
     "catalog:import": "npx tsx scripts/catalog-import.ts",
+    "catalog:enrich-sample": "npx tsx scripts/catalog-enrich-sample.ts",
     "catalog:pipeline-test": "npx tsx scripts/catalog-pipeline-test.ts",
     "catalog:discover-shopify": "node scripts/discover-shopify-products.mjs",
     "catalog:seed": "npx tsx scripts/seed-supabase.ts",

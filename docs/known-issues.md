@@ -8,19 +8,23 @@
 - **Affiliate feeds:** Rakuten provider scaffolded; credentials required for ingestion. Impact URL builder exists — no product feed yet.
 - **Capacitor native:** Scripts present; device validation recommended before App Store submit.
 
-## Catalog pipeline (new)
+## Catalog pipeline
 
 - `npm run catalog:coverage` — gap report by occasion/presentation/category
 - `npm run catalog:stale` — verification recheck window
-- `npm run catalog:import` — JSON import with verify gate
-- Migration `003_product_verification.sql` required before seeding new fields
+- `npm run catalog:import` — JSON batch import → `verified-products.json` + optional Supabase
+- `npm run catalog:enrich-sample` — OpenAI tag sample (verified only; `--report` for review JSON)
+- `npm run db:migrate` — applies all files in `supabase/migrations/` (needs `SUPABASE_DB_PASSWORD`)
+- Migration `003_product_verification.sql` required for full verification columns in Supabase
+- Seed falls back to core columns if migration 003 not yet applied
 
 ## Resolved in latest pass
 
 - Recommendation engine uses `isRecommendationEligible()` — homepage URLs never appear in Shop now
 - Extended catalog excluded from look generation (designer profiles still browsable)
-- OpenAI removed as verification source of truth (advisory warn-only in link checks)
-- Designer diversity caps per look / lookbook
+- JSON import merges verified products into [`verified-products.json`](data/catalog/import/verified-products.json) and local recommendation pool
+- OpenAI enrichment wired (`catalog:enrich-sample`, optional `--enrich-tags` on import) — tags only, never URLs/prices
+- `beta:test` variety check stabilized (5 runs; warn-only when eligible pool under 12)
 
 ## Technical debt
 

@@ -34,6 +34,9 @@ yarn-error.log*
 .env
 .env*.local
 
+# catalog enrichment review output (local only)
+/data/catalog/import/enrichment-reviews/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

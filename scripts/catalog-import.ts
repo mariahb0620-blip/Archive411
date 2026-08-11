@@ -1,11 +1,16 @@
 /**
  * Curated catalog import — run: npm run catalog:import [--dry-run] [path]
- * Default input: data/catalog/import/*.json
+ * Default input: data/catalog/import/batch-*.json (excludes verified-products.json)
  */
 import fs from "fs";
 import path from "path";
 import { ingestImportRecords } from "../lib/catalog/ingest";
+import { mergeIntoVerifiedProductsFile } from "../lib/catalog/mergeImportedProducts";
+import { filterRecommendationEligible } from "../lib/catalog/isRecommendationEligible";
 import type { ImportProductRecord } from "../lib/catalog/types";
+
+const IMPORT_DIR = path.join(process.cwd(), "data", "catalog", "import");
+const SKIP_FILES = new Set(["verified-products.json", "example-record.json"]);
 
 function loadEnvLocal() {
   const envPath = path.join(process.cwd(), ".env.local");
@@ -28,18 +33,21 @@ const inputArg = process.argv.find((a) => a.endsWith(".json") && !a.startsWith("
 
 function loadRecords(): ImportProductRecord[] {
   const records: ImportProductRecord[] = [];
-  const dir = inputArg
-    ? path.dirname(path.resolve(inputArg))
-    : path.join(process.cwd(), "data", "catalog", "import");
+  const dir = inputArg ? path.dirname(path.resolve(inputArg)) : IMPORT_DIR;
 
   const files = inputArg
     ? [path.resolve(inputArg)]
     : fs.existsSync(dir)
-      ? fs.readdirSync(dir).filter((f) => f.endsWith(".json")).map((f) => path.join(dir, f))
+      ? fs
+          .readdirSync(dir)
+          .filter((f) => f.endsWith(".json") && !SKIP_FILES.has(f))
+          .map((f) => path.join(dir, f))
       : [];
 
   if (!files.length) {
-    console.error("No import JSON files found. Add files to data/catalog/import/");
+    console.error(
+      "No import JSON files found. Add batch-*.json to data/catalog/import/ or pass a file path."
+    );
     process.exit(1);
   }
 
@@ -60,10 +68,17 @@ function loadRecords(): ImportProductRecord[] {
 
 async function main() {
   console.log("=== Archive411 catalog import ===\n");
-  if (dryRun) console.log("DRY RUN — no Supabase writes\n");
+  if (dryRun) console.log("DRY RUN — no file or Supabase writes\n");
 
   const records = loadRecords();
-  const { products, summary } = ingestImportRecords(records, { dryRun, skipFetch: true });
+  const enrichTags = process.argv.includes("--enrich-tags");
+  const { products, summary } = await ingestImportRecords(records, {
+    dryRun,
+    skipFetch: true,
+    enrichTags,
+  });
+
+  const verifiedProducts = products.filter((p) => p.verificationStatus === "verified");
 
   console.log("\n--- Import summary ---");
   console.log(`Added/previewed: ${summary.added}`);
@@ -74,6 +89,13 @@ async function main() {
   if (summary.errors.length) {
     console.log("\nErrors:");
     summary.errors.slice(0, 15).forEach((e) => console.log(`  ${e}`));
+  }
+
+  if (!dryRun && verifiedProducts.length) {
+    const merged = mergeIntoVerifiedProductsFile(verifiedProducts);
+    const eligible = filterRecommendationEligible(merged);
+    console.log(`\nMerged ${verifiedProducts.length} product(s) into verified-products.json`);
+    console.log(`Local import pool: ${merged.length} total, ${eligible.length} recommendation-eligible`);
   }
 
   if (!dryRun && products.length && process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -102,6 +124,9 @@ async function main() {
         occasion_tags: p.occasionTags,
         climate_tags: p.climateTags,
         department_tags: p.departmentTags,
+        style_tags: p.styleTags ?? [],
+        season_tags: p.seasonTags ?? [],
+        color_tags: p.colorTags ?? [],
         inventory_status: p.inventoryStatus,
         source_url: p.sourceUrl,
         source_type: p.sourceType,
@@ -120,8 +145,8 @@ async function main() {
       if (error) summary.errors.push(`${p.id}: ${error.message}`);
     }
     console.log(`\nUpserted ${products.length} products to Supabase`);
-  } else if (!dryRun) {
-    console.log("\nValidated import records. Set Supabase credentials to upsert.");
+  } else if (!dryRun && verifiedProducts.length) {
+    console.log("\nRun npm run catalog:seed to sync full catalog to Supabase.");
   }
 
   console.log(failed(summary) ? "\n=== IMPORT FAILED ===" : "\n=== IMPORT COMPLETE ===");
