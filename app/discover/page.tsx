@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AppHeader from "@/app/components/AppHeader";
@@ -14,6 +14,12 @@ import {
   getStyleCommunity,
 } from "@/app/data/styleCommunities";
 import {
+  APP_VIBE_NORTH_STAR,
+  getPriorityMenswearInspiration,
+  inspirationSearchAesthetics,
+  STYLE_INSPIRATION_REFERENCES,
+} from "@/app/data/styleInspirationBoard";
+import {
   generateLookbookFromSearch,
 } from "@/app/services/lookbook.service";
 import { completeLookbookFlow } from "@/app/services/completeLookbookFlow";
@@ -24,6 +30,7 @@ function DiscoverContent() {
   const { saveLookbook } = useApp();
   const searchParams = useSearchParams();
   const communityId = searchParams.get("community");
+  const board = searchParams.get("board");
   const city = searchParams.get("city") ?? undefined;
   const [community, setCommunity] = useState(
     communityId ? getStyleCommunity(communityId) : undefined
@@ -33,12 +40,30 @@ function DiscoverContent() {
     if (communityId) setCommunity(getStyleCommunity(communityId));
   }, [communityId]);
 
+  const priorityTwelve = useMemo(() => getPriorityMenswearInspiration(), []);
+
   const exploreCommunity = async () => {
     if (!community) return;
     const { lookbook, looks } = generateLookbookFromSearch({
       aesthetics: community.searchAesthetics,
       city,
       fashionCommunities: [community.id],
+    });
+    await completeLookbookFlow(router, saveLookbook, {
+      lookbook,
+      looks,
+      method: "search",
+    });
+  };
+
+  const exploreBoard = async (kind: "menswear-12" | "north-star") => {
+    const aesthetics =
+      kind === "north-star"
+        ? [...APP_VIBE_NORTH_STAR.attributes]
+        : inspirationSearchAesthetics();
+    const { lookbook, looks } = generateLookbookFromSearch({
+      aesthetics,
+      query: kind === "north-star" ? "alyazmine editorial chic" : "menswear inspiration board",
     });
     await completeLookbookFlow(router, saveLookbook, {
       lookbook,
@@ -67,11 +92,72 @@ function DiscoverContent() {
             <h2 className="mt-2 font-display text-3xl text-ivory">{community.publicName}</h2>
             <p className="mt-4 text-sm text-muted">{community.description}</p>
             <p className="mt-4 text-xs italic text-smoke">{community.explorationNote}</p>
-            {city && (
-              <p className="mt-2 text-xs text-muted">City focus: {city}</p>
-            )}
+            {city && <p className="mt-2 text-xs text-muted">City focus: {city}</p>}
             <div className="mt-6">
               <EditorialButton onClick={exploreCommunity}>Generate lookbook edit</EditorialButton>
+            </div>
+          </section>
+        )}
+
+        {(board === "menswear-12" || board === "north-star" || !community) && (
+          <section className="mt-12 border border-smoke/40 bg-charcoal/40 p-6 md:p-8">
+            <p className="text-[10px] uppercase tracking-[0.2em] text-accent">
+              Inspiration board · Part 2
+            </p>
+            <h2 className="mt-2 font-display text-2xl text-ivory md:text-3xl">
+              {board === "north-star"
+                ? `Vibe north star · ${APP_VIBE_NORTH_STAR.handle}`
+                : "Menswear first 12 + city references"}
+            </h2>
+            <p className="mt-4 max-w-2xl text-sm text-muted">
+              {board === "north-star"
+                ? APP_VIBE_NORTH_STAR.note
+                : "Creative references for vibe and garment direction — not partnerships or endorsements. Names map to style attributes so looks pull this energy."}
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <EditorialButton onClick={() => exploreBoard("menswear-12")}>
+                Generate from First 12
+              </EditorialButton>
+              <EditorialButton variant="ghost" onClick={() => exploreBoard("north-star")}>
+                Generate Alyazmine-vibe edit
+              </EditorialButton>
+            </div>
+
+            <div className="mt-10">
+              <p className="text-[10px] uppercase tracking-[0.25em] text-muted">Strongest first 12</p>
+              <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {priorityTwelve.map((ref) => (
+                  <li key={ref.id} className="border border-smoke/40 p-4">
+                    <p className="text-xs text-accent">{ref.handle}</p>
+                    <p className="mt-1 font-display text-lg text-ivory">{ref.displayName}</p>
+                    <p className="mt-1 text-[10px] uppercase tracking-[0.15em] text-muted">
+                      {ref.city}
+                    </p>
+                    <p className="mt-2 line-clamp-3 text-xs text-muted">{ref.why}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="mt-12">
+              <p className="text-[10px] uppercase tracking-[0.25em] text-muted">
+                Full board · {STYLE_INSPIRATION_REFERENCES.length} references
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {["New York City", "London", "Paris", "Ho Chi Minh City", "Global", "Abu Dhabi"].map(
+                  (c) => (
+                    <span
+                      key={c}
+                      className="border border-smoke/50 px-3 py-1 text-[10px] uppercase tracking-[0.15em] text-ivory"
+                    >
+                      {c}:{" "}
+                      {
+                        STYLE_INSPIRATION_REFERENCES.filter((r) => r.city === c).length
+                      }
+                    </span>
+                  )
+                )}
+              </div>
             </div>
           </section>
         )}

@@ -198,6 +198,20 @@ export const CULTURAL_DISCOVERY_SECTIONS = [
     href: "/independent",
     description: "Independent labels from Lagos, London, New York and beyond.",
   },
+  {
+    id: "inspiration-menswear-12",
+    title: "Menswear Inspiration First 12",
+    href: "/discover?board=menswear-12",
+    description:
+      "Jovel Roystan through Wisdom Kaye — Black street style, luxury streetwear, tailoring, queer fashion, Paris craft, diaspora references.",
+  },
+  {
+    id: "inspiration-alyazmine",
+    title: "App Vibe North Star",
+    href: "/discover?board=north-star",
+    description:
+      "Editorial, sexy, chic dressing inspired by @alyazmine's aesthetic and the designers she wears — the goal feel of Archive411.",
+  },
 ] as const;
 
 export function getStyleCommunity(id: string): StyleCommunity | undefined {

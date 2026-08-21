@@ -84,4 +84,11 @@ export const STYLE_TO_AESTHETIC: Record<string, string[]> = {
   "korean-street": ["y2k", "minimalist", "preppy", "nightlife"],
   "thai-vietnamese-street": ["resort-wear", "handmade", "deconstructed", "nightlife"],
   "alternative": ["punk", "goth", "grunge", "experimental", "cyber-y2k"],
+  // Inspiration-board aliases (Part 2) — map searches to garment attributes
+  "alyazmine": ["editorial", "sexy", "chic", "nightlife", "body-conscious", "high-low"],
+  "jovel": ["relaxed-tailoring", "streetwear", "knitwear", "wearable-experimental"],
+  "bloody-osiris": ["oversized", "luxury-streetwear", "boots", "avant-garde", "technical"],
+  "dapper-dan": ["black-luxury", "harlem-tailoring", "custom-clothing", "logo-culture"],
+  "ibkamara": ["black-futurism", "afrofuturism", "editorial", "deconstruction", "gender-expansive"],
+  "wet-avocado": ["fitted", "sexy", "playful", "nightlife", "y2k", "body-conscious"],
 };

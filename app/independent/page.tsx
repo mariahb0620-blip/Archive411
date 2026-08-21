@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Link from "next/link";
-import AppImage from "@/app/components/AppImage";
+import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import AppImage from "@/app/components/AppImage";
 import AppHeader from "@/app/components/AppHeader";
 import EditorialButton from "@/app/components/EditorialButton";
 import EmptyState from "@/app/components/EmptyState";
@@ -98,12 +98,12 @@ function IndependentContent() {
                   href={`/designers/${designer.slug}`}
                   className="border border-smoke/50 bg-charcoal"
                 >
-                  <div className="relative aspect-[4/3]">
+                  <div className="relative aspect-[4/3] bg-[#141414]">
                     <AppImage
                       src={designer.coverImageUrl}
                       alt={designer.labelName}
                       fill
-                      className="object-cover"
+                      className="object-contain p-6"
                       sizes="400px"
                     />
                   </div>
@@ -149,12 +149,12 @@ function IndependentContent() {
                 href={`/destinations/${store.slug}`}
                 className="group border border-smoke/50 bg-charcoal"
               >
-                <div className="relative aspect-[16/10] overflow-hidden">
+                <div className="relative aspect-[16/10] overflow-hidden bg-[#141414]">
                   <AppImage
                     src={store.coverImageUrl}
                     alt={store.name}
                     fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                    className="object-contain p-8 transition-transform duration-700 group-hover:scale-[1.03]"
                     sizes="600px"
                   />
                 </div>

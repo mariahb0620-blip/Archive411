@@ -1,6 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="750" viewBox="0 0 600 750" fill="none">
-  <rect width="600" height="750" fill="#1a1a1a"/>
-  <rect x="48" y="48" width="504" height="654" stroke="#444" stroke-width="2" fill="#242424"/>
-  <path d="M180 520 L240 200 L360 200 L420 520" stroke="#888" stroke-width="3" fill="none"/>
-  <text x="300" y="700" text-anchor="middle" fill="#666" font-family="system-ui,sans-serif" font-size="14">Product image  retailer feed pending</text>
+  <rect width="600" height="750" fill="#121212"/>
+  <rect x="40" y="40" width="520" height="670" stroke="#c9b896" stroke-width="2" fill="#1c1c1c"/>
+  <path d="M220 280h160v80H220z" stroke="#888" stroke-width="3" fill="none"/>
+  <path d="M250 360v120M350 360v120" stroke="#888" stroke-width="3"/>
+  <text x="300" y="560" text-anchor="middle" fill="#c9b896" font-family="Georgia,serif" font-size="22">Shoes</text>
+  <text x="300" y="600" text-anchor="middle" fill="#777" font-family="system-ui,sans-serif" font-size="13">Retailer photo pending</text>
 </svg>
